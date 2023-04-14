@@ -1,8 +1,6 @@
 package com.tjsse.jikespace.controller;
 
-import com.tjsse.jikespace.entity.User;
 import com.tjsse.jikespace.entity.dto.*;
-import com.tjsse.jikespace.entity.vo.PostDataVO;
 import com.tjsse.jikespace.service.CollectService;
 import com.tjsse.jikespace.service.CommentService;
 import com.tjsse.jikespace.service.PostService;
@@ -40,9 +38,9 @@ public class PostController {
     @Autowired
     private CollectService collectService;
 
-    @GetMapping("post_data")
-    public Result getPostData(@RequestHeader(value = "JK-Token", required = false) String jk_token,Integer id,Integer offset,Integer limit){
-        PostDataDTO postDataDTO = new PostDataDTO((long)id,offset,limit);
+    @GetMapping("{{post_id}}")
+    public Result getPostData(@RequestHeader(value = "JK-Token", required = false) String jk_token, @PathVariable String post_id, Integer offset, Integer limit){
+        PostDataDTO postDataDTO = new PostDataDTO(Long.valueOf(post_id),offset,limit);
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
             return postService.getPostData(null,postDataDTO);
@@ -51,7 +49,7 @@ public class PostController {
         return postService.getPostData(userId,postDataDTO);
     }
 
-    @PostMapping("collect_post")
+    @PostMapping("collect")
     public Result collectPost(@RequestHeader("JK-Token") String jk_token, @RequestBody CollectPostDTO collectPostDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
@@ -100,32 +98,59 @@ public class PostController {
         return replyService.replyOnReply(userId,replyOnReplyDTO);
     }
 
-    @DeleteMapping("comment")
-    public Result deleteComment(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String ,String> map){
+    @DeleteMapping("{{comment_id}}")
+    public Result deleteComment(@RequestHeader("JK-Token") String jk_token, @PathVariable Integer comment_id){
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
             return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
-        Long commentId = Long.valueOf(map.get("commentId"));
-        if(commentId==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg(),null);
-        }
+        Long commentId = Long.valueOf(comment_id);
         return commentService.deleteComment(userId,commentId);
     }
 
-    @DeleteMapping("reply")
-    public Result deleteReply(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String ,String> map){
+    @DeleteMapping("{{reply_id}}")
+    public Result deleteReply(@RequestHeader("JK-Token") String jk_token, @PathVariable String reply_id){
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
             return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
-        Long replyId = Long.valueOf(map.get("replyId"));
-        if(replyId==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg(),null);
-        }
+        Long replyId = Long.valueOf(reply_id);
         return replyService.deleteReply(userId,replyId);
+    }
+
+    @PostMapping("report")
+    public Result report(@RequestHeader("JK-Token") String jk_token, @RequestBody ReportDTO reportDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        if (userIdStr == null) {
+            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+
+        return null;
+    }
+
+    @PostMapping("like")
+    public Result likePost(@RequestHeader("JK-Token") String jk_token, @RequestBody String postId){
+        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        if (userIdStr == null) {
+            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+
+        return null;
+    }
+
+    @PostMapping("follow_user")
+    public Result followUser(@RequestHeader("JK-Token") String jk_token, @RequestBody String targetId){
+        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        if (userIdStr == null) {
+            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+
+        return null;
     }
 
     @PostMapping("upload_picture")
@@ -142,6 +167,5 @@ public class PostController {
 
         return Result.success(20000,"okk",map);
     }
-
 
 }

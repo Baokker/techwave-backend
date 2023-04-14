@@ -162,7 +162,7 @@ public class CommentServiceImpl implements CommentService {
         commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
         List<ReplyVO> replyVOList = new ArrayList<>();
-        replyVOList = replyService.findReplysByCommentId(comment.getId(),userId);
+        replyVOList = replyService.findRepliesByCommentId(comment.getId(),userId);
         commentVO.setReplyVOList(replyVOList);
         return commentVO;
     }

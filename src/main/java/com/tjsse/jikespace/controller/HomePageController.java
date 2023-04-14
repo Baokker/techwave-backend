@@ -25,7 +25,7 @@ public class HomePageController {
     @Autowired
     private PostService postService;
 
-    @GetMapping("collect_section")
+    @GetMapping("collect")
     public Result collectSection(@RequestHeader("JK-Token") String jk_token){
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
@@ -35,17 +35,17 @@ public class HomePageController {
         return sectionService.collectSection(userId);
     }
 
-    @GetMapping("hot_section")
+    @GetMapping("section")
     public Result hotSection(){
         return sectionService.hotSection(5);
     }
 
-    @GetMapping("search_section")
+    @GetMapping("search")
     public Result searchSection(String searchContent){
         return sectionService.searchSection(searchContent);
     }
 
-    @GetMapping("hot_post")
+    @GetMapping("post")
     public Result hotPost(){
         return postService.hotPost();
     }

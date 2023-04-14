@@ -15,7 +15,7 @@ public interface ReplyService {
 
     Result deleteReply(Long userId, Long replyId);
 
-    List<ReplyVO> findReplysByCommentId(Long id,Long userId);
+    List<ReplyVO> findRepliesByCommentId(Long id,Long userId);
 
     List<MyReplyVO> findRepliesByUserId(Long userId);
 }

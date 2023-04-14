@@ -100,7 +100,7 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public List<ReplyVO> findReplysByCommentId(Long id, Long userId) {
+    public List<ReplyVO> findRepliesByCommentId(Long id, Long userId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Reply::getCommentId,id);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
