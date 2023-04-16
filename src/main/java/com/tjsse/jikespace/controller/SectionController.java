@@ -3,6 +3,7 @@ package com.tjsse.jikespace.controller;
 import com.tjsse.jikespace.entity.dto.PostPublishDTO;
 import com.tjsse.jikespace.entity.dto.PostsWithTagDTO;
 import com.tjsse.jikespace.entity.dto.SectionDataDTO;
+import com.tjsse.jikespace.entity.dto.SectionSearchPostDTO;
 import com.tjsse.jikespace.mapper.PostMapper;
 import com.tjsse.jikespace.service.CollectService;
 import com.tjsse.jikespace.service.PostService;
@@ -33,9 +34,9 @@ public class SectionController {
     @Autowired
     private PostService postService;
 
-    @GetMapping("get_section_data")
-    public Result getSectionData(@RequestHeader(value = "JK-Token", required = false) String jk_token,Integer sectionId,Integer curPage,Integer limit){
-        SectionDataDTO sectionDataDTO = new SectionDataDTO((long)sectionId,curPage,limit);
+    @GetMapping("data/{{section_id}}")
+    public Result getSectionData(@RequestHeader(value = "JK-Token", required = false) String jk_token,@PathVariable Integer section_id,Integer page,Integer perPage){
+        SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
             return sectionService.getSectionData(null,sectionDataDTO);
@@ -44,13 +45,13 @@ public class SectionController {
         return sectionService.getSectionData(userId,sectionDataDTO);
     }
 
-    @GetMapping("get_posts_by_subsection")
-    public Result getPostsBySubsection(Integer sectionId,Integer subsectionId,Integer curPage,Integer limit){
-        PostsWithTagDTO postsWithTagDTO = new PostsWithTagDTO((long)sectionId,(long)subsectionId,curPage,limit);
+    @GetMapping("{{subsection_id}}")
+    public Result getPostsBySubsection(Integer sectionId,@PathVariable Integer subsection_id,Integer page,Integer perPage){
+        PostsWithTagDTO postsWithTagDTO = new PostsWithTagDTO((long)sectionId,(long)subsection_id,page,perPage);
         return sectionService.getPostsByTag(postsWithTagDTO);
     }
 
-    @PostMapping ("collect_section")
+    @PostMapping ("collect")
     public Result collectSection(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String, String> map){
         Long sectionId = Long.valueOf(map.get("sectionId"));
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
@@ -70,4 +71,42 @@ public class SectionController {
         Long userId = Long.valueOf(userIdStr);
         return postService.publishPost(userId,postPublishDTO);
     }
+
+    @GetMapping("{{section_id}}/search")
+    public Result getPostsBySearch(@PathVariable Integer section_id,Integer page,Integer perPage,String content){
+        SectionSearchPostDTO sectionSearchPostDTO = new SectionSearchPostDTO((long)section_id,page,perPage,content);
+        return null;
+    }
+
+    @GetMapping("{{section_id}}/post")
+    public Result getAllPosts(@PathVariable Integer section_id,Integer page,Integer perPage){
+        SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
+        return null;
+    }
+
+    @GetMapping("{{section_id}}/pinned_post")
+    public Result getPinnedPosts(@RequestHeader("JK-Token") String jk_token,@PathVariable Integer section_id,Integer page,Integer perPage){
+        SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
+        return null;
+    }
+
+    @GetMapping("{{section_id}}/highlighted_post")
+    public Result getHighlightedPosts(@PathVariable Integer section_id,Integer page,Integer perPage){
+        SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
+        return null;
+    }
+
+    @PostMapping ("follow")
+    public Result followSection(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String, String> map){
+        Long sectionId = Long.valueOf(map.get("sectionId"));
+        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        if (userIdStr == null) {
+            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.valueOf(userIdStr);
+        return null;
+    }
+
+
+
 }
