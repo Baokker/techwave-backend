@@ -1,10 +1,10 @@
 package com.tjsse.jikespace.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.tjsse.jikespace.entity.CollectAndPost;
+import com.tjsse.jikespace.entity.CollectionAndPost;
 import com.tjsse.jikespace.entity.CollectAndSection;
 import com.tjsse.jikespace.entity.dto.CollectPostDTO;
-import com.tjsse.jikespace.mapper.CollectAndPostMapper;
+import com.tjsse.jikespace.mapper.CollectionAndPostMapper;
 import com.tjsse.jikespace.mapper.CollectAndSectionMapper;
 import com.tjsse.jikespace.service.CollectService;
 import com.tjsse.jikespace.service.SectionService;
@@ -28,7 +28,7 @@ public class CollectServiceImpl implements CollectService {
     @Autowired
     private SectionService sectionService;
     @Autowired
-    private CollectAndPostMapper collectAndPostMapper;
+    private CollectionAndPostMapper collectAndPostMapper;
     @Autowired
     private CollectAndSectionMapper collectAndSectionMapper;
 
@@ -36,9 +36,9 @@ public class CollectServiceImpl implements CollectService {
 
     @Override
     public Boolean isUserCollectPost(Long userId, Long postId) {
-        LambdaQueryWrapper<CollectAndPost> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndPost::getPostId,postId);
-        queryWrapper.eq(CollectAndPost::getUserId,userId);
+        LambdaQueryWrapper<CollectionAndPost> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndPost::getPostId,postId);
+        queryWrapper.eq(CollectionAndPost::getUserId,userId);
         queryWrapper.last("limit 1");
         if(collectAndPostMapper.selectOne(queryWrapper)==null)
             return false;
@@ -90,22 +90,22 @@ public class CollectServiceImpl implements CollectService {
             return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg());
         }
 
-        LambdaQueryWrapper<CollectAndPost> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndPost::getPostId,postId);
-        queryWrapper.eq(CollectAndPost::getUserId,userId);
+        LambdaQueryWrapper<CollectionAndPost> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndPost::getPostId,postId);
+        queryWrapper.eq(CollectionAndPost::getUserId,userId);
         queryWrapper.last("limit 1");
-        CollectAndPost collectAndPost1 = collectAndPostMapper.selectOne(queryWrapper);
+        CollectionAndPost collectionAndPost1 = collectAndPostMapper.selectOne(queryWrapper);
 
-        if(collectAndPost1 == null&&folderId==null){
+        if(collectionAndPost1 == null&&folderId==null){
             return Result.fail(-1,"参数有误",null);
         }
 
-        if(collectAndPost1 == null){
-            CollectAndPost collectAndPost =new CollectAndPost();
-            collectAndPost.setPostId(postId);
-            collectAndPost.setUserId(userId);
-            collectAndPost.setFolderId(folderId);
-            collectAndPostMapper.insert(collectAndPost);
+        if(collectionAndPost1 == null){
+            CollectionAndPost collectionAndPost =new CollectionAndPost();
+            collectionAndPost.setPostId(postId);
+            collectionAndPost.setUserId(userId);
+            collectionAndPost.setFolderId(folderId);
+            collectAndPostMapper.insert(collectionAndPost);
             return Result.success(20000,"收藏成功",null);
         }
         else{
@@ -116,24 +116,24 @@ public class CollectServiceImpl implements CollectService {
 
     @Override
     public List<Long> findPostIdsByFolderId(Long folderId) {
-        LambdaQueryWrapper<CollectAndPost> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndPost::getFolderId,folderId);
-        List<CollectAndPost> collectAndPosts = collectAndPostMapper.selectList(queryWrapper);
-        if(collectAndPosts.size()==0){
+        LambdaQueryWrapper<CollectionAndPost> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndPost::getFolderId,folderId);
+        List<CollectionAndPost> collectionAndPosts = collectAndPostMapper.selectList(queryWrapper);
+        if(collectionAndPosts.size()==0){
             return null;
         }
         List<Long> postIds = new ArrayList<>();
-        for (CollectAndPost collectAndPost :
-                collectAndPosts) {
-            postIds.add(collectAndPost.getPostId());
+        for (CollectionAndPost collectionAndPost :
+                collectionAndPosts) {
+            postIds.add(collectionAndPost.getPostId());
         }
         return postIds;
     }
 
     @Override
     public void deleteCollectPostByFolderId(Long folderId) {
-        LambdaQueryWrapper<CollectAndPost> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndPost::getFolderId,folderId);
+        LambdaQueryWrapper<CollectionAndPost> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndPost::getFolderId,folderId);
         collectAndPostMapper.delete(queryWrapper);
     }
 }

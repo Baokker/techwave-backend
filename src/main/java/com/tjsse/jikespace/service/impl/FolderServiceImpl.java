@@ -1,13 +1,13 @@
 package com.tjsse.jikespace.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.tjsse.jikespace.entity.Folder;
+import com.tjsse.jikespace.entity.CollectionAndFolder;
 import com.tjsse.jikespace.entity.dto.FolderPostDTO;
 import com.tjsse.jikespace.entity.dto.RenameFolderDTO;
 import com.tjsse.jikespace.entity.vo.CollectPostsVO;
 import com.tjsse.jikespace.entity.vo.FolderPostVO;
 import com.tjsse.jikespace.entity.vo.FolderVO;
-import com.tjsse.jikespace.mapper.FolderMapper;
+import com.tjsse.jikespace.mapper.CollectionAndFolderMapper;
 import com.tjsse.jikespace.service.CollectService;
 import com.tjsse.jikespace.service.FolderService;
 import com.tjsse.jikespace.service.PostService;
@@ -30,26 +30,26 @@ import java.util.Map;
 @Service
 public class FolderServiceImpl implements FolderService {
     @Autowired
-    private FolderMapper folderMapper;
+    private CollectionAndFolderMapper collectionAndFolderMapper;
     @Autowired
     private CollectService collectService;
     @Autowired
     private PostService postService;
     @Override
     public Result createFolder(Long userId, String folderName) {
-        LambdaQueryWrapper<Folder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Folder::getUserId,userId);
-        queryWrapper.eq(Folder::getFolderName,folderName);
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getUserId,userId);
+        queryWrapper.eq(CollectionAndFolder::getName,folderName);
         queryWrapper.last("limit 1");
-        Folder folder = folderMapper.selectOne(queryWrapper);
-        if(folder!=null){
+        CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
+        if(collectionAndFolder !=null){
             return Result.fail(-1,"该文件夹名字重复",null);
         }
         else{
-            Folder folder1 = new Folder();
-            folder1.setFolderName(folderName);
-            folder1.setUserId(userId);
-            folderMapper.insert(folder1);
+            CollectionAndFolder collectionAndFolder1 = new CollectionAndFolder();
+            collectionAndFolder1.setName(folderName);
+            collectionAndFolder1.setUserId(userId);
+            collectionAndFolderMapper.insert(collectionAndFolder1);
             return Result.success(20000,"okk",null);
         }
     }
@@ -59,15 +59,15 @@ public class FolderServiceImpl implements FolderService {
         Long folderId = renameFolderDTO.getFolderId();
         String folderName = renameFolderDTO.getFolderName();
 
-        LambdaQueryWrapper<Folder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Folder::getId,folderId);
-        queryWrapper.eq(Folder::getFolderName,folderName);
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getId,folderId);
+        queryWrapper.eq(CollectionAndFolder::getName,folderName);
         queryWrapper.last("limit 1");
-        Folder folder = folderMapper.selectOne(queryWrapper);
-        if(folder==null){
-            Folder folderById = this.findFolderById(folderId);
-            folderById.setFolderName(folderName);
-            folderMapper.updateById(folderById);
+        CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
+        if(collectionAndFolder ==null){
+            CollectionAndFolder collectionAndFolderById = this.findFolderById(folderId);
+            collectionAndFolderById.setName(folderName);
+            collectionAndFolderMapper.updateById(collectionAndFolderById);
             return Result.success(20000,"okk",null);
         }
         else{
@@ -77,10 +77,10 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Result getFolders(Long userId) {
-        LambdaQueryWrapper<Folder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Folder::getUserId,userId);
-        List<Folder> folders = folderMapper.selectList(queryWrapper);
-        List<FolderVO> folderVOList = copyList(folders);
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getUserId,userId);
+        List<CollectionAndFolder> collectionAndFolders = collectionAndFolderMapper.selectList(queryWrapper);
+        List<FolderVO> folderVOList = copyList(collectionAndFolders);
         Map<String,Object> map = new HashMap<>();
         map.put("folders",folderVOList);
         return Result.success(map);
@@ -95,12 +95,12 @@ public class FolderServiceImpl implements FolderService {
             return Result.fail(-1,"参数有误",null);
         }
         if(folderId==0){
-            LambdaQueryWrapper<Folder> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Folder::getUserId,userId);
-            queryWrapper.orderByAsc(Folder::getId);
+            LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(CollectionAndFolder::getUserId,userId);
+            queryWrapper.orderByAsc(CollectionAndFolder::getId);
             queryWrapper.last("limit 1");
-            Folder folder = folderMapper.selectOne(queryWrapper);
-            folderId = folder.getId();
+            CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
+            folderId = collectionAndFolder.getId();
         }
 
         List<FolderPostVO> folderPostVOList = postService.findPostsByFolderIdWithPage(folderId,curPage,limit);
@@ -120,40 +120,40 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public Result deleteFolder(Long userId, Long folderId) {
-        LambdaQueryWrapper<Folder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Folder::getId,folderId);
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getId,folderId);
         queryWrapper.last("limit 1");
-        Folder folder = folderMapper.selectOne(queryWrapper);
-        if(folder==null){
+        CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
+        if(collectionAndFolder ==null){
             return Result.fail(-1,"参数有误",null);
         }
-        folderMapper.deleteById(folder);
+        collectionAndFolderMapper.deleteById(collectionAndFolder);
 
         collectService.deleteCollectPostByFolderId(folderId);
 
         return Result.success(20000,"操作成功",null);
     }
 
-    private List<FolderVO> copyList(List<Folder> folders) {
+    private List<FolderVO> copyList(List<CollectionAndFolder> collectionAndFolders) {
         List<FolderVO> folderVOList = new ArrayList<>();
-        for (Folder folder :
-                folders) {
-            folderVOList.add(copy(folder));
+        for (CollectionAndFolder collectionAndFolder :
+                collectionAndFolders) {
+            folderVOList.add(copy(collectionAndFolder));
         }
         return folderVOList;
     }
 
-    private FolderVO copy(Folder folder) {
+    private FolderVO copy(CollectionAndFolder collectionAndFolder) {
         FolderVO folderVO = new FolderVO();
-        BeanUtils.copyProperties(folder,folderVO);
+        BeanUtils.copyProperties(collectionAndFolder,folderVO);
         return folderVO;
     }
 
-    private Folder findFolderById(Long folderId) {
-        LambdaQueryWrapper<Folder> queryWrapper =new LambdaQueryWrapper<>();
-        queryWrapper.eq(Folder::getId,folderId);
+    private CollectionAndFolder findFolderById(Long folderId) {
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper =new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getId,folderId);
         queryWrapper.last("limit 1");
-        Folder folder = folderMapper.selectOne(queryWrapper);
-        return folder;
+        CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
+        return collectionAndFolder;
     }
 }

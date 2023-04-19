@@ -1,24 +1,22 @@
 package com.tjsse.jikespace.entity;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 /**
- * @author wlf 1557177832@qq.com
- * @version 2022/12/8 22:57
- * @since JDK18
+ * @author xiaoming xxx@163.com
+ * @version 2023/4/19 14:46
+ * @since JDK8
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "jk_folder")
-public class Folder {
+@TableName(value = "t_follow_section")
+public class FollowAndSection {
     @TableId(type = IdType.AUTO)
-    private Long id;
-    private Long userId;
-    private String folderName;
+    private Long sectionId;
+    private Long followerId;
 }
+

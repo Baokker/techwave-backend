@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 /**
  * 评论
  *
@@ -19,13 +17,12 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "jk_comment")
+@TableName(value = "t_comment")
 public class Comment {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long bodyId;
     private Long postId;
     private Long authorId;
-    private Boolean isDeleted;
-    private LocalDateTime updateTime;
+    private String content;
+    private String createAt;
 }
