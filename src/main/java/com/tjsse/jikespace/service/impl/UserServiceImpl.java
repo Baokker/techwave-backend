@@ -54,7 +54,6 @@ public class UserServiceImpl implements UserService {
     public Result getUserInfo(String token) {
         String userIdFromToken = JwtUtil.getUserIdFromToken(token);
         String role = JwtUtil.getUserRoleFromToken(token);
-
         assert userIdFromToken != null;
         Integer userId = Integer.parseInt(userIdFromToken);
 
@@ -63,30 +62,22 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             return Result.fail(OTHER_ERROR.getCode(), "用户不存在", null);
         }
-
-        if (user.getNickname() == null) {
-            userVO.setName(user.getUsername());
-        } else {
-            userVO.setName(user.getNickname());
-        }
+        userVO.setUsername(user.getUsername());
         userVO.setAvatar(user.getAvatar());
 
-        List<String> roles = new ArrayList<>();
-        roles.add(role);
+        List<Map<String, Object>> roles = new ArrayList<>();
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", role);
+        map.put("sectionId", null);
+        roles.add(map);
 
-        if (role != null &&
-                user.getStudentId() != null &&
-                (user.getStudentId().length() == 7 || user.getStudentId().length() == 5)) {
-            roles.add("student"); // 在校生身份
-        }
+
         if (role != null && user.getIsModerator()) {
-            roles.add("moderator"); // 版主身份
-        }
+            Map<String, Object> map1 = new HashMap<>();
+            map1.put("name","moderator");
 
-        if (user.getStudentId() != null) {
-            userVO.setIsAuthenticated(true); // 已认证
-        } else {
-            userVO.setIsAuthenticated(false);
+            map1.put("sectionId","");
+            roles.add(map1); // 版主身份
         }
 
         userVO.setRoles(roles);

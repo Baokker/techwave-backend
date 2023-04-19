@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: JiKeSpace
@@ -18,8 +19,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserVO {
-    private String name;
+//    private String name;
     private String avatar;
-    private List<String> roles;
-    private Boolean isAuthenticated;
+//    private List<String> roles;
+    private List<Map<String, Object>> roles;
+    private String username;
+//    private Boolean isAuthenticated;
 }
