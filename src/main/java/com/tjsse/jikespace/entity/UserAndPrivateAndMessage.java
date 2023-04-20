@@ -1,24 +1,27 @@
 package com.tjsse.jikespace.entity;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
-/**
- * @author wlf 1557177832@qq.com
- * @version 2022/12/4 11:04
- * @since JDK18
- */
 @Data
-@AllArgsConstructor
+@Builder
 @NoArgsConstructor
-@TableName(value = "t_subsection")
-public class SubSection {
-    @TableId(type = IdType.AUTO)
-    private Long id;
+@AllArgsConstructor
+@TableName(value = "t_user_private_message")
+public class UserAndPrivateAndMessage {
 
-    private String name;
+    private Long userId;
+
+    private Long messageId;
+
+    private Boolean isRead;
+
+
+
 }
+

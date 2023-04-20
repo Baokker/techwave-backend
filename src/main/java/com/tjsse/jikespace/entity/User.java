@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value = "jk_user")
+@TableName(value = "t_user")
 public class User {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -30,8 +30,6 @@ public class User {
     private String username;
 
     private Boolean isModerator;
-
-    private String studentId;
 
     private String summary;
 
@@ -47,7 +45,7 @@ public class User {
 
     private String phoneNumber;
 
-    private String nickname;
+    private String account;
 
     private String password;
 

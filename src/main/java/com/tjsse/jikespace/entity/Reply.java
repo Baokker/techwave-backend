@@ -21,15 +21,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value = "jk_reply")
+@TableName(value = "t_reply")
 public class Reply {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String content;
-    private LocalDateTime updateTime;
     private Long commentId;
-    private Long parentId;
     private Long authorId;
-    private Long toUid;
-    private String type;
+    private Long toId;
+    private String createdAt;
 }

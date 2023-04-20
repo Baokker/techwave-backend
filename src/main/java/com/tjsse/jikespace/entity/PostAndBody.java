@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName(value = "jk_post_body")
+@TableName(value = "t_post_body")
 public class PostAndBody {
     @TableId(type = IdType.AUTO)
     private Long id;

@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "jk_section_subsection")
+@TableName(value = "t_section_subsection")
 public class SectionAndSubSection {
     @TableId(type = IdType.AUTO)
     private Long id;

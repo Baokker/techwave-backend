@@ -1,5 +1,4 @@
 package com.tjsse.jikespace.entity;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -8,31 +7,32 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * @author wlf 1557177832@qq.com
- * @version 2022/12/2 23:41
- * @since JDK18
- */
+
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value = "t_section")
-public class Section {
-    @TableId(type = IdType.AUTO)
+@TableName(value = "t_private_message")
+public class PrivateAndMessage {
     private Long id;
 
-    private String name;
+    private  Long sendId;
 
-    private String description;
+    private Long recipientId;
 
-    private Long moderatorId;
+    private String messageText;
 
-    private String avatar;
+    private String sendAt;
 
-    private Integer postCount;
+    private Long senderDeletedBy;
 
-    private Integer userCount;
+    private String senderDeletedAt;
 
-    private Boolean isBanned;
+    private Long recipientDeletedBy;
+
+    private String recipientDeletedAt;
+
+
+
 }

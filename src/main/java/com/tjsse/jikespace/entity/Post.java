@@ -24,31 +24,31 @@ public class Post {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private Integer commentCounts;
-
-    private String summary;
+    private Long authorId;
 
     private String title;
 
-    private Boolean isDeleted;
+    private String content;
 
-    private String postStatus;
-
-    private Integer viewCounts;
+    private String CreatedAt;
 
     private Boolean isPinned;
 
-    private Long authorId;
-
-    private Long bodyId;
+    private Boolean isHighlighted;
 
     private Long sectionId;
 
     private Long subsectionId;
 
-    private String tag;
+    private Integer commentCounts;
 
-    private String postType;
+    private Boolean isDeleted;
+
+    private Integer viewCounts;
+
+    private Long bodyId;
 
     private LocalDateTime updateTime;
+
+
 }
