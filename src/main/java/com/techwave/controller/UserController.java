@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.techwave.entity.dto.LoginDTO;
 import com.techwave.entity.dto.UserDTO;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.RedisUtils;
 import com.techwave.utils.Result;
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  **/
 
 @RestController
-@RequestMapping("user/")
+@RequestMapping("user")
 public class UserController {
 
     @Autowired
@@ -36,7 +36,7 @@ public class UserController {
     @Autowired
     private UserService userInfoService;
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public Result registerUser(@RequestBody UserDTO userDTO) {
         String username = userDTO.getUsername();
         String password = userDTO.getPassword();
@@ -46,44 +46,44 @@ public class UserController {
         return registerService.register(username, password, email, account);
     }
 
-    @GetMapping("send_email_code")
+    @GetMapping("/send_email_code")
     public Result sendEmailCode(@RequestParam(value = "email") String email) {
         RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
         if (email == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "邮箱为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "邮箱为空", null);
         }
         return userInfoService.sendEmailVerifyCode(email);
     }
 
-    @PostMapping("reset_password")
+    @PostMapping("/reset_password")
     public Result forgetPassword(@RequestBody JSONObject jsonObject) throws JSONException {
         String email = jsonObject.getString("email");
         String verifyCode = jsonObject.getString("verifyCode");
         String newPassword = jsonObject.getString("newPassword");
 
         if (email == null || verifyCode == null || newPassword == null) {
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(), JKCode.PARAMS_ERROR.getMsg(), null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
         }
         return userInfoService.forgetPassword(verifyCode, email, newPassword);
     }
 
-    @GetMapping("info")
+    @GetMapping("/info")
     public Result getUserInfo(@RequestHeader("T-Token") String token) {
         return userInfoService.getUserInfo(token);
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public Result login(@RequestBody LoginDTO loginDTO) {
         String accountOrEmail = loginDTO.getAccount();
         String password = loginDTO.getPassword();
         return loginService.createTokenByAccountOrEmail(accountOrEmail, password);
     }
 
-    @PostMapping("logout")
-    public Result logout(@RequestHeader("T-Token") String jk_token) {
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    @PostMapping("/logout")
+    public Result logout(@RequestHeader("T-Token") String token) {
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Integer userId = Integer.parseInt(userIdStr);
         return loginService.logout(userId);

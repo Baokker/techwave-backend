@@ -2,7 +2,7 @@ package com.techwave.controller;
 
 import com.techwave.entity.Admin;
 import com.techwave.entity.dto.SolveDTO;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.BanUserDTO;
@@ -38,9 +38,9 @@ public class AdminController {
     }
 
     @GetMapping("section_request")
-    public Result getSectionRequestData(@RequestHeader(value = "JK-Token", required = false) String jk_token, Integer page, Integer perPage){
+    public Result getSectionRequestData(@RequestHeader(value = "JK-Token", required = false) String token, Integer page, Integer perPage){
         PageDTO pageDTO = new PageDTO(page,perPage);
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
@@ -49,9 +49,9 @@ public class AdminController {
     }
 
     @GetMapping("report")
-    public Result getReportData(@RequestHeader(value = "JK-Token", required = false) String jk_token, Integer page, Integer perPage){
+    public Result getReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer page, Integer perPage){
         PageDTO pageDTO = new PageDTO(page,perPage);
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
@@ -60,28 +60,28 @@ public class AdminController {
     }
 
     @PostMapping ("section_request")
-    public Result SectionRequest(@RequestHeader("JK-Token") String jk_token, @RequestBody SolveDTO solveDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result SectionRequest(@RequestHeader("T-Token") String token, @RequestBody SolveDTO solveDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         return null;
     }
 
     @PostMapping ("ban_user")
-    public Result BanUser(@RequestHeader("JK-Token") String jk_token, @RequestBody BanUserDTO banUserDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result BanUser(@RequestHeader("T-Token") String token, @RequestBody BanUserDTO banUserDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         return null;
     }
 
     @DeleteMapping("report")
-    public Result deleteReportData(@RequestHeader(value = "JK-Token", required = false) String jk_token, Integer reportId){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result deleteReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer reportId){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }

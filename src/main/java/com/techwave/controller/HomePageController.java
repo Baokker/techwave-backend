@@ -1,6 +1,6 @@
 package com.techwave.controller;
 
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
 import com.techwave.service.PostService;
@@ -24,10 +24,10 @@ public class HomePageController {
     private PostService postService;
 
     @GetMapping("collect")
-    public Result collectSection(@RequestHeader("JK-Token") String jk_token){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result collectSection(@RequestHeader("T-Token") String token){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Integer userId = Integer.parseInt(userIdStr);
         return sectionService.collectSection(userId);

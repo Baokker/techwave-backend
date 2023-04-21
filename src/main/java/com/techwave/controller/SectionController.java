@@ -4,7 +4,7 @@ import com.techwave.entity.dto.PostPublishDTO;
 import com.techwave.entity.dto.PostsWithTagDTO;
 import com.techwave.entity.dto.SectionDataDTO;
 import com.techwave.entity.dto.SectionSearchPostDTO;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
 import com.techwave.service.CollectService;
@@ -33,9 +33,9 @@ public class SectionController {
     private PostService postService;
 
     @GetMapping("data/{{section_id}}")
-    public Result getSectionData(@RequestHeader(value = "JK-Token", required = false) String jk_token, @PathVariable Integer section_id, Integer page, Integer perPage){
+    public Result getSectionData(@RequestHeader(value = "JK-Token", required = false) String token, @PathVariable Integer section_id, Integer page, Integer perPage){
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return sectionService.getSectionData(null,sectionDataDTO);
         }
@@ -50,21 +50,21 @@ public class SectionController {
     }
 
     @PostMapping ("collect")
-    public Result collectSection(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String, String> map){
+    public Result collectSection(@RequestHeader("T-Token") String token, @RequestBody Map<String, String> map){
         Long sectionId = Long.valueOf(map.get("sectionId"));
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         return collectService.collectSection(userId,sectionId);
     }
 
     @PostMapping("publish_post")
-    public Result publishPost(@RequestHeader("JK-Token") String jk_token, @RequestBody PostPublishDTO postPublishDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result publishPost(@RequestHeader("T-Token") String token, @RequestBody PostPublishDTO postPublishDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         return postService.publishPost(userId,postPublishDTO);
@@ -83,7 +83,7 @@ public class SectionController {
     }
 
     @GetMapping("{{section_id}}/pinned_post")
-    public Result getPinnedPosts(@RequestHeader("JK-Token") String jk_token,@PathVariable Integer section_id,Integer page,Integer perPage){
+    public Result getPinnedPosts(@RequestHeader("T-Token") String token,@PathVariable Integer section_id,Integer page,Integer perPage){
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
         return null;
     }
@@ -95,11 +95,11 @@ public class SectionController {
     }
 
     @PostMapping ("follow")
-    public Result followSection(@RequestHeader("JK-Token") String jk_token, @RequestBody Map<String, String> map){
+    public Result followSection(@RequestHeader("T-Token") String token, @RequestBody Map<String, String> map){
         Long sectionId = Long.valueOf(map.get("sectionId"));
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         return null;

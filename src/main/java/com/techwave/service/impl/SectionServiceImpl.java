@@ -11,7 +11,7 @@ import com.techwave.service.CollectService;
 import com.techwave.service.PostService;
 import com.techwave.service.SectionService;
 import com.techwave.service.ThreadService;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
 import com.techwave.mapper.CollectAndSectionMapper;
 import com.techwave.mapper.SectionAndSubSectionMapper;
@@ -52,7 +52,7 @@ public class SectionServiceImpl implements SectionService {
         Integer limit = sectionDataDTO.getLimit();
 
         if(sectionId==null||curPage==null||limit==null)
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(), JKCode.PARAMS_ERROR.getMsg(),null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
 
         Section section = this.findSectionById(sectionId);
         if(section==null){
@@ -98,7 +98,7 @@ public class SectionServiceImpl implements SectionService {
         Integer limit = postsWithTagDTO.getLimit();
 
         if(sectionId==null||subsectionId==null||curPage==null||limit==null)
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(), JKCode.PARAMS_ERROR.getMsg(),null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
         Section section = this.findSectionById(sectionId);
         if(section==null){
             return Result.fail(-1,"该版块不存在，参数有误",null);

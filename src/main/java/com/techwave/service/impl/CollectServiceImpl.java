@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.techwave.entity.CollectionAndPost;
 import com.techwave.entity.CollectionAndSection;
 import com.techwave.entity.dto.CollectPostDTO;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
 import com.techwave.mapper.CollectionAndPostMapper;
 import com.techwave.mapper.CollectAndSectionMapper;
@@ -69,7 +69,7 @@ public class CollectServiceImpl implements CollectService {
             this.collectAndSectionMapper.delete(queryWrapper);
 
             sectionService.updateSectionByCollectCount(sectionId,false);
-            return Result.success(JKCode.SUCCESS.getCode(),"已取消收藏",null);
+            return Result.success(TCode.SUCCESS.getCode(),"已取消收藏",null);
         }
         else {
             CollectionAndSection collectionAndSection = new CollectionAndSection();
@@ -87,7 +87,7 @@ public class CollectServiceImpl implements CollectService {
         Long postId = collectPostDTO.getId();
         Long folderId = collectPostDTO.getFolderId();
         if(postId==null&&folderId==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg());
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
         }
 
         LambdaQueryWrapper<CollectionAndPost> queryWrapper = new LambdaQueryWrapper<>();

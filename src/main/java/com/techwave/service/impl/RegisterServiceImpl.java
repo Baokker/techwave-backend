@@ -2,7 +2,7 @@ package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.techwave.entity.User;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
 import com.techwave.mapper.UserMapper;
 import com.techwave.service.FolderService;
@@ -33,7 +33,7 @@ public class RegisterServiceImpl implements RegisterService {
         userNameWrapper.eq("username", username);
         userList = userMapper.selectList(userNameWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(JKCode.USERNAME_EXIST.getCode(), "用户名已存在", null);
+            return Result.fail(TCode.USERNAME_EXIST.getCode(), "用户名已存在", null);
         }
 
         // email
@@ -41,7 +41,7 @@ public class RegisterServiceImpl implements RegisterService {
         emailWrapper.eq("email", email);
         userList = userMapper.selectList(emailWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(JKCode.EMAIL_EXIST.getCode(), "邮箱已存在", null);
+            return Result.fail(TCode.EMAIL_EXIST.getCode(), "邮箱已存在", null);
         }
 
         // account
@@ -49,7 +49,7 @@ public class RegisterServiceImpl implements RegisterService {
         accountWrapper.eq("account", username);
         userList = userMapper.selectList(accountWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(JKCode.ACCOUNT_EXIST.getCode(), "账号已存在", null);
+            return Result.fail(TCode.ACCOUNT_EXIST.getCode(), "账号已存在", null);
         }
 
         String encodedPassword = passwordEncoder.encode(password);
@@ -62,7 +62,7 @@ public class RegisterServiceImpl implements RegisterService {
 
         int insert = userMapper.insert(user);
         if (insert == 0 || insert < 0) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "用户注册失败");
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "用户注册失败");
         } else {
             folderService.createFolder(user.getId(), "默认收藏夹");
         }

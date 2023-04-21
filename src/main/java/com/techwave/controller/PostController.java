@@ -1,7 +1,7 @@
 package com.techwave.controller;
 
 import com.techwave.entity.dto.*;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.OssService;
 import com.techwave.utils.Result;
@@ -39,9 +39,9 @@ public class PostController {
     private CollectService collectService;
 
     @GetMapping("{{post_id}}")
-    public Result getPostData(@RequestHeader(value = "JK-Token", required = false) String jk_token, @PathVariable String post_id, Integer offset, Integer limit){
+    public Result getPostData(@RequestHeader(value = "JK-Token", required = false) String token, @PathVariable String post_id, Integer offset, Integer limit){
         PostDataDTO postDataDTO = new PostDataDTO(Long.valueOf(post_id),offset,limit);
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return postService.getPostData(null,postDataDTO);
         }
@@ -50,59 +50,59 @@ public class PostController {
     }
 
     @PostMapping("collect")
-    public Result collectPost(@RequestHeader("JK-Token") String jk_token, @RequestBody CollectPostDTO collectPostDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result collectPost(@RequestHeader("T-Token") String token, @RequestBody CollectPostDTO collectPostDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         return collectService.collectPost(userId,collectPostDTO);
     }
 
     @PostMapping("reply_on_post")
-    public Result replyOnPost(@RequestHeader("JK-Token") String jk_token, @RequestBody ReplyOnPostDTO replyOnPostDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result replyOnPost(@RequestHeader("T-Token") String token, @RequestBody ReplyOnPostDTO replyOnPostDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         if(replyOnPostDTO.getPostId()==null||replyOnPostDTO.getContent()==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg(),null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
         }
         return commentService.replyOnPost(userId,replyOnPostDTO);
     }
 
     @PostMapping("reply_on_comment")
-    public Result replyOnComment(@RequestHeader("JK-Token") String jk_token, @RequestBody ReplyOnCommentDTO replyOnCommentDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result replyOnComment(@RequestHeader("T-Token") String token, @RequestBody ReplyOnCommentDTO replyOnCommentDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         if(replyOnCommentDTO.getCommentId()==null||replyOnCommentDTO.getContent()==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg(),null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
         }
         return replyService.replyOnComment(userId,replyOnCommentDTO);
     }
 
     @PostMapping("reply_on_reply")
-    public Result replyOnReply(@RequestHeader("JK-Token") String jk_token, @RequestBody ReplyOnReplyDTO replyOnReplyDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result replyOnReply(@RequestHeader("T-Token") String token, @RequestBody ReplyOnReplyDTO replyOnReplyDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         if(replyOnReplyDTO.getReplyId()==null||replyOnReplyDTO.getContent()==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg(),null);
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
         }
         return replyService.replyOnReply(userId,replyOnReplyDTO);
     }
 
     @DeleteMapping("{{comment_id}}")
-    public Result deleteComment(@RequestHeader("JK-Token") String jk_token, @PathVariable Integer comment_id){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result deleteComment(@RequestHeader("T-Token") String token, @PathVariable Integer comment_id){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         Long commentId = Long.valueOf(comment_id);
@@ -110,10 +110,10 @@ public class PostController {
     }
 
     @DeleteMapping("{{reply_id}}")
-    public Result deleteReply(@RequestHeader("JK-Token") String jk_token, @PathVariable String reply_id){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result deleteReply(@RequestHeader("T-Token") String token, @PathVariable String reply_id){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
         Long replyId = Long.valueOf(reply_id);
@@ -121,10 +121,10 @@ public class PostController {
     }
 
     @PostMapping("report")
-    public Result report(@RequestHeader("JK-Token") String jk_token, @RequestBody ReportDTO reportDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result report(@RequestHeader("T-Token") String token, @RequestBody ReportDTO reportDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
@@ -132,10 +132,10 @@ public class PostController {
     }
 
     @PostMapping("like")
-    public Result likePost(@RequestHeader("JK-Token") String jk_token, @RequestBody String postId){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result likePost(@RequestHeader("T-Token") String token, @RequestBody String postId){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
@@ -143,10 +143,10 @@ public class PostController {
     }
 
     @PostMapping("follow_user")
-    public Result followUser(@RequestHeader("JK-Token") String jk_token, @RequestBody String targetId){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result followUser(@RequestHeader("T-Token") String token, @RequestBody String targetId){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
@@ -154,10 +154,10 @@ public class PostController {
     }
 
     @PostMapping("upload_picture")
-    public Result uploadPicture(@RequestHeader("JK-Token") String jk_token,@RequestParam("image") MultipartFile picture){
-        String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
+    public Result uploadPicture(@RequestHeader("T-Token") String token,@RequestParam("image") MultipartFile picture){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
 

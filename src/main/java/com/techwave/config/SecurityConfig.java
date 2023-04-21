@@ -29,12 +29,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private AdminMapper adminMapper;
-
+    //
+    //@Autowired
+    //private UserMapper userMapper;
+    //@Autowired
+    //private AdminMapper adminMapper;
+    //
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -46,37 +46,37 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    @Override
-    public void configure(WebSecurity web) {
-        web.ignoring().antMatchers(
-                "/admin/login",
-                "/user/login",
-                "/user/register",
-                "/user/forget-pwd",
-                "/user/send-email-code",
-                "/section/get_section_data",
-                "/section/get_posts_by_subsection",
-                "/homepage/hot_section",
-                "/homepage/search_section",
-                "/homepage/news",
-                "/homepage/hot_post",
-                "/post/post_data");
-    }
+    //@Override
+    //public void configure(WebSecurity web) {
+        //web.ignoring().antMatchers(
+        //        "/admin/login",
+        //        "/user/login",
+        //        "/user/register",
+        //        "/user/forget-pwd",
+        //        "/user/send-email-code",
+        //        "/section/get_section_data",
+        //        "/section/get_posts_by_subsection",
+        //        "/homepage/hot_section",
+        //        "/homepage/search_section",
+        //        "/homepage/news",
+        //        "/homepage/hot_post",
+        //        "/post/post_data");
+    //}
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                //.and()
+                //.authorizeRequests()
 //              .antMatchers("/admin/login/", "/user/login/", "/user/register/").permitAll()
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
-                .anyRequest()
-                .authenticated();
+//                .antMatchers(HttpMethod.OPTIONS).permitAll()
+//                .anyRequest()
+//                .authenticated();
 
-        http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
     }
-
-    private JwtAuthenticationTokenFilter authenticationTokenFilterBean() {
-        return new JwtAuthenticationTokenFilter(userMapper, adminMapper);
-    }
+//
+//    private JwtAuthenticationTokenFilter authenticationTokenFilterBean() {
+//        return new JwtAuthenticationTokenFilter(userMapper, adminMapper);
+//    }
 }

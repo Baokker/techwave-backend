@@ -6,7 +6,7 @@ import com.techwave.entity.*;
 import com.techwave.entity.dto.PostPublishDTO;
 import com.techwave.entity.vo.*;
 import com.techwave.service.*;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.PostDataDTO;
 import com.techwave.mapper.PostAndBodyMapper;
@@ -75,7 +75,7 @@ public class PostServiceImpl implements PostService {
         Integer limit = postDataDTO.getLimit();
 
         if(postId==null||offset==null||limit==null){
-            return Result.fail(JKCode.PARAMS_ERROR.getCode(),JKCode.PARAMS_ERROR.getMsg());
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
         }
 
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();

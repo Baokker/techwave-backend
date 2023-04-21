@@ -12,7 +12,7 @@ import com.techwave.entity.dto.UserInfoDTO;
 import com.techwave.entity.vo.UserDataVO;
 import com.techwave.entity.vo.UserVO;
 import com.techwave.mapper.AdminMapper;
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
 import com.techwave.mapper.CommentMapper;
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         UserVO userVO = new UserVO();
         User user = userMapper.selectById(userId);
         if (user == null) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "用户不存在", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "用户不存在", null);
         }
         userVO.setUsername(user.getUsername());
         userVO.setAvatar(user.getAvatar());
@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userVO.setRoles(roles);
-        return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), userVO);
+        return Result.success(TCode.SUCCESS.getCode(), TCode.SUCCESS.getMsg(), userVO);
     }
 
     @Override
@@ -131,13 +131,13 @@ public class UserServiceImpl implements UserService {
         // 检测验证码与邮箱是否正确
         boolean checkResult = emailService.checkVerifyCode(email, verifyCode);
         if (!checkResult) {
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "验证码错误", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "验证码错误", null);
         }
         UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
         userUpdateWrapper.eq("email", email);
         userUpdateWrapper.set("password", passwordEncoder.encode(newPassword));
         userMapper.update(null, userUpdateWrapper);
-        return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), null);
+        return Result.success(TCode.SUCCESS.getCode(), TCode.SUCCESS.getMsg(), null);
     }
 
     @Override
@@ -147,15 +147,15 @@ public class UserServiceImpl implements UserService {
                 .eq("is_deleted", false);
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
-            return Result.fail(JKCode.ACCOUNT_NOT_EXIST.getCode(), "该邮箱未使用，请先注册", null);
+            return Result.fail(TCode.ACCOUNT_NOT_EXIST.getCode(), "该邮箱未使用，请先注册", null);
         }
         try {
             emailService.sendEmailVerifyCode(email);
         } catch (Exception e) {
             e.printStackTrace();
-            return Result.fail(JKCode.OTHER_ERROR.getCode(), "发送邮件失败", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "发送邮件失败", null);
         }
-        return Result.success(JKCode.SUCCESS.getCode(), "发送验证码成功", null);
+        return Result.success(TCode.SUCCESS.getCode(), "发送验证码成功", null);
     }
 
     @Override

@@ -67,7 +67,6 @@ public class JwtUtil {
     }
 
     public static String getUserIdFromToken(String T_Token) {
-
         if (!StringUtils.hasText(T_Token) || !T_Token.startsWith("Bearer ")) {
             return null;
         }

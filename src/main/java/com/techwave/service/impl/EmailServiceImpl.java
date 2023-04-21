@@ -1,6 +1,6 @@
 package com.techwave.service.impl;
 
-import com.techwave.utils.JKCode;
+import com.techwave.utils.TCode;
 import com.techwave.utils.RedisUtils;
 import com.techwave.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class EmailServiceImpl implements EmailService {
     // 将验证码存储到redis缓存中
     public void storeVerifyCode(String code, String receiver) {
         // store the verification code
-        String redisKey = JKCode.EMAIL_CODE_PREFIX.getMsg() + receiver;
+        String redisKey = TCode.EMAIL_CODE_PREFIX.getMsg() + receiver;
         RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
         // if the key exists, delete it
         if (redisUtils.exists(redisKey)) {
@@ -75,7 +75,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public boolean checkVerifyCode(String email, String code) {
-        String finalCode = JKCode.EMAIL_CODE_PREFIX.getMsg() + email;
+        String finalCode = TCode.EMAIL_CODE_PREFIX.getMsg() + email;
         RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
         if (redisUtils.exists(finalCode)) {
             redisUtils.del(finalCode);

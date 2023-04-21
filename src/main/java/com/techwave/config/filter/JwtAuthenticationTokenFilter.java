@@ -48,7 +48,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
 //        String token = request.getHeader("Authorization");
-        String token = request.getHeader("JK-Token");
+        String token = request.getHeader("T-Token");
 
         if (!StringUtils.hasText(token) || !token.startsWith("Bearer ")) {
             filterChain.doFilter(request, response); // 直接拒绝请求
@@ -72,33 +72,33 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         }
 
         //  下面根据登录信息生成用户，需要根据token，得到用户的角色，动态生成authenticationToken
-        String role = map.get("role").toString();
-
-        if (Objects.equals(role, "admin")) {
-            Admin admin = adminMapper.selectById(Integer.parseInt(userid));
-            if (admin == null) {
-                throw new RuntimeException("we can't find the admin");
-            }
-            AppAdmin loginAdmin = new AppAdmin(admin);
-
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(loginAdmin, null, null);
-
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }
-        else if (Objects.equals(role, "user")) {
-            User user = userMapper.selectById(Integer.parseInt(userid));
-
-            if (user == null) {
-                throw new RuntimeException("找不到该用户，请先注册");
-            }
-
-            AppUser loginUser = new AppUser(user);
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(loginUser, null, null);
-
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        }
+        //String role = map.get("role").toString();
+        //
+        //if (Objects.equals(role, "admin")) {
+        //    Admin admin = adminMapper.selectById(Integer.parseInt(userid));
+        //    if (admin == null) {
+        //        throw new RuntimeException("we can't find the admin");
+        //    }
+        //    AppAdmin loginAdmin = new AppAdmin(admin);
+        //
+        //    UsernamePasswordAuthenticationToken authenticationToken =
+        //            new UsernamePasswordAuthenticationToken(loginAdmin, null, null);
+        //
+        //    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        //}
+        //else if (Objects.equals(role, "user")) {
+        //    User user = userMapper.selectById(Integer.parseInt(userid));
+        //
+        //    if (user == null) {
+        //        throw new RuntimeException("找不到该用户，请先注册");
+        //    }
+        //
+        //    AppUser loginUser = new AppUser(user);
+        //    UsernamePasswordAuthenticationToken authenticationToken =
+        //            new UsernamePasswordAuthenticationToken(loginUser, null, null);
+        //
+        //    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        //}
 
         filterChain.doFilter(request, response);
     }

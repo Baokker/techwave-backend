@@ -6,7 +6,7 @@ package com.techwave.utils;
  * @since JDK18
  */
 
-public enum JKCode {
+public enum TCode {
     SUCCESS(20000, "请求成功"),
     PARAMS_ERROR(10001,"参数有误"),
     ACCOUNT_NOT_EXIST(10002,"用户名不存在"),
@@ -33,7 +33,7 @@ public enum JKCode {
     private Integer code;
     private String msg;
 
-    JKCode(Integer code, String msg){
+    TCode(Integer code, String msg){
         this.code = code;
         this.msg = msg;
     }
