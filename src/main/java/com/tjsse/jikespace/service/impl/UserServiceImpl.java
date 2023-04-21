@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
         if (role != null && user.getIsModerator()) {
             LambdaQueryWrapper<Section> queryWrapper =new LambdaQueryWrapper<>();
-            queryWrapper.eq(Section::getModeratorId,userIdFromToken).select(Section::getId);
+            queryWrapper.eq(Section::getModeratorId,userIdFromToken);
             List<Section> sections = sectionMapper.selectList(queryWrapper);
             for (Section section: sections) {
                 Map<String, Object> map1 = new HashMap<>();
