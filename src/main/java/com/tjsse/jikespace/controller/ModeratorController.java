@@ -34,7 +34,7 @@ public class ModeratorController {
         Long userId = Long.valueOf(userIdStr);
         Long sectionId = addSubSectionDTO.getSectionId();
         Section sectionById = sectionService.findSectionById(sectionId);
-        if(Objects.equals(sectionById.getAdminId(), userId)){
+        if(Objects.equals(sectionById.getModeratorId(), userId)){
             return sectionService.addSubSection(addSubSectionDTO);
         }
         return Result.fail(-1,"该用户没有此权限",null);
