@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "jk_comment_reply")
+@TableName(value = "t_comment_reply")
 public class CommentAndReply {
     @TableId(type = IdType.AUTO)
     private Long id;

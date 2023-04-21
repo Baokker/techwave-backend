@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class RegisterServiceImpl implements RegisterService {
@@ -29,13 +26,11 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public Result register(String username, String password, String email) {
-        Map<String, String> map = new HashMap<>();
-
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username)
                 .or()
                 .eq("email", email);
-        List<User> userList = new ArrayList<>();
+        List<User> userList;
         userList = userMapper.selectList(queryWrapper);
         if (userList.size() >= 1) {
             return Result.fail(JKCode.ACCOUNT_EXIST.getCode(), "用户已存在", null);
@@ -56,7 +51,7 @@ public class RegisterServiceImpl implements RegisterService {
         }
         else {
             folderService.createFolder(user.getId(),"默认收藏夹");
-            user.setNickname("用户"+user.getId().toString());
+            user.setUsername("用户"+user.getId().toString());
             userMapper.updateById(user);
         }
 

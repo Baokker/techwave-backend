@@ -10,7 +10,6 @@ import com.tjsse.jikespace.entity.vo.ReplyVO;
 import com.tjsse.jikespace.mapper.CommentAndBodyMapper;
 import com.tjsse.jikespace.mapper.CommentMapper;
 import com.tjsse.jikespace.mapper.PostAndCommentMapper;
-import com.tjsse.jikespace.mapper.PostMapper;
 import com.tjsse.jikespace.service.CommentService;
 import com.tjsse.jikespace.service.PostService;
 import com.tjsse.jikespace.service.ReplyService;
@@ -51,7 +50,6 @@ public class CommentServiceImpl implements CommentService {
         Page<Comment> commentPage = new Page<>(offset,limit);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getPostId,postId);
-        queryWrapper.eq(Comment::getIsDeleted,false);
         Page<Comment> commentPage1 = commentMapper.selectPage(commentPage,queryWrapper);
         List<Comment> records = commentPage1.getRecords();
         List<CommentVO> commentVOList = this.copyList(records,userId);
@@ -68,8 +66,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = new Comment();
         comment.setPostId(postId);
         comment.setAuthorId(userId);
-        comment.setIsDeleted(false);
-        comment.setUpdateTime(LocalDateTime.now());
+        comment.setCreateAt(LocalDateTime.now());
         commentMapper.insert(comment);
         CommentAndBody commentAndBody = new CommentAndBody();
         commentAndBody.setCommentId(comment.getId());
@@ -90,7 +87,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Result deleteComment(Long userId, Long commentId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getIsDeleted,false);
         queryWrapper.eq(Comment::getId,commentId);
         queryWrapper.eq(Comment::getAuthorId,userId);
         queryWrapper.last("limit 1");
@@ -98,7 +94,6 @@ public class CommentServiceImpl implements CommentService {
         if(comment==null){
             return Result.fail(-1,"参数有误",null);
         }
-        comment.setIsDeleted(true);
         commentMapper.updateById(comment);
 
         LambdaQueryWrapper<PostAndComment> queryWrapper2 = new LambdaQueryWrapper<>();
@@ -118,7 +113,6 @@ public class CommentServiceImpl implements CommentService {
             return myReplyVOList;
         }
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getIsDeleted,false);
         queryWrapper.in(Comment::getPostId,postIds);
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
         List<MyReplyVO> myReplyVOList = copyMyComments(commentList);
@@ -137,7 +131,7 @@ public class CommentServiceImpl implements CommentService {
     private MyReplyVO copyMyComment(Comment comment) {
         MyReplyVO myReplyVO = new MyReplyVO();
         myReplyVO.setId(comment.getId());
-        myReplyVO.setTime(comment.getUpdateTime());
+        myReplyVO.setTime(comment.getCreateAt());
         myReplyVO.setType("Comment");
         myReplyVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         return myReplyVO;
@@ -158,7 +152,7 @@ public class CommentServiceImpl implements CommentService {
         commentVO.setCommentId(comment.getId());
         commentVO.setAuthor(user.getUsername());
         commentVO.setAvatar(user.getAvatar());
-        commentVO.setUpdateTime(comment.getUpdateTime());
+        commentVO.setUpdateTime(comment.getCreateAt());
         commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
         List<ReplyVO> replyVOList = new ArrayList<>();

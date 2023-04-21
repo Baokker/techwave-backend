@@ -10,9 +10,9 @@ import com.tjsse.jikespace.utils.Result;
  * @date: 2022-12-02 10:49
  **/
 public interface LoginService {
-    public Result createTokenByAdminName(String username, String password);
-    public Result createTokenByEmail(String email, String password);
+    Result createTokenByAdminName(String username, String password);
+    Result createTokenByEmail(String email, String password);
 
-    public Result logout(Integer userId);
+    Result logout(Integer userId);
 
 }

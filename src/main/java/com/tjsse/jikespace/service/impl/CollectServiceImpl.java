@@ -2,7 +2,7 @@ package com.tjsse.jikespace.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.tjsse.jikespace.entity.CollectionAndPost;
-import com.tjsse.jikespace.entity.CollectAndSection;
+import com.tjsse.jikespace.entity.CollectionAndSection;
 import com.tjsse.jikespace.entity.dto.CollectPostDTO;
 import com.tjsse.jikespace.mapper.CollectionAndPostMapper;
 import com.tjsse.jikespace.mapper.CollectAndSectionMapper;
@@ -48,9 +48,9 @@ public class CollectServiceImpl implements CollectService {
 
     @Override
     public Boolean isUserCollectSection(Long userId, Long sectionId) {
-        LambdaQueryWrapper<CollectAndSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndSection::getSectionId,sectionId);
-        queryWrapper.eq(CollectAndSection::getUserId,userId);
+        LambdaQueryWrapper<CollectionAndSection> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndSection::getSectionId,sectionId);
+        queryWrapper.eq(CollectionAndSection::getUserId,userId);
         queryWrapper.last("limit 1");
         if(collectAndSectionMapper.selectOne(queryWrapper)==null)
             return false;
@@ -61,10 +61,10 @@ public class CollectServiceImpl implements CollectService {
     @Override
     public Result collectSection(Long userId, Long sectionId) {
         Boolean isCollected = this.isUserCollectSection(userId,sectionId);
-        LambdaQueryWrapper<CollectAndSection> queryWrapper= new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<CollectionAndSection> queryWrapper= new LambdaQueryWrapper<>();
         if(isCollected){
-            queryWrapper.eq(CollectAndSection::getUserId,userId);
-            queryWrapper.eq(CollectAndSection::getSectionId,sectionId);
+            queryWrapper.eq(CollectionAndSection::getUserId,userId);
+            queryWrapper.eq(CollectionAndSection::getSectionId,sectionId);
             queryWrapper.last("limit 1");
             this.collectAndSectionMapper.delete(queryWrapper);
 
@@ -72,10 +72,10 @@ public class CollectServiceImpl implements CollectService {
             return Result.success(JKCode.SUCCESS.getCode(),"已取消收藏",null);
         }
         else {
-            CollectAndSection collectAndSection = new CollectAndSection();
-            collectAndSection.setSectionId(sectionId);
-            collectAndSection.setUserId(userId);
-            this.collectAndSectionMapper.insert(collectAndSection);
+            CollectionAndSection collectionAndSection = new CollectionAndSection();
+            collectionAndSection.setSectionId(sectionId);
+            collectionAndSection.setUserId(userId);
+            this.collectAndSectionMapper.insert(collectionAndSection);
 
             sectionService.updateSectionByCollectCount(sectionId,true);
             return Result.success(20000,"收藏成功",null);

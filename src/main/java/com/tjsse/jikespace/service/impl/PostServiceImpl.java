@@ -101,7 +101,7 @@ public class PostServiceImpl implements PostService {
         postVO.setSectionId(post.getSectionId());
 
         Section section = sectionService.findSectionById(post.getSectionId());
-        postVO.setSectionName(section.getSectionName());
+        postVO.setSectionName(section.getName());
         postVO.setTime(post.getUpdateTime());
         postVO.setContent(this.findBodyByPostId(postId));
 
@@ -109,7 +109,7 @@ public class PostServiceImpl implements PostService {
         User user = userService.findUserById(post1.getAuthorId());
         postVO.setAuthor(user.getUsername());
         postVO.setAvatar(user.getAvatar());
-        postVO.setBrowseNumber(post.getViewCounts());
+        postVO.setBrowseNumber(post.getViewCount());
 
 
         if(post.getSubsectionId()==null){
@@ -127,7 +127,7 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        postVO.setTotal(post.getCommentCounts()+1);
+        postVO.setTotal(post.getCommentCount()+1);
         postVO.setCommentVOList(commentService.findCommentVOsByPostIdWithPage(userId,postId,offset,limit)); //userId是发送请求的用户的id
 
         threadService.updateViewCount(postMapper,post); //通过线程池更新阅读数
@@ -156,7 +156,6 @@ public class PostServiceImpl implements PostService {
         post.setAuthorId(userId);
         post.setIsDeleted(false);
         post.setUpdateTime(LocalDateTime.now());
-        post.setPostType("交流贴");
         this.postMapper.insert(post);
 
         PostAndBody postAndBody = new PostAndBody();
@@ -198,7 +197,6 @@ public class PostServiceImpl implements PostService {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getIsDeleted,false);
         queryWrapper.eq(Post::getAuthorId,userId);
-        queryWrapper.eq(Post::getPostType,"交流贴");
         Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
         List<Post> postList = postPage1.getRecords();
         MyPostVO myPostVO = new MyPostVO();
@@ -253,8 +251,8 @@ public class PostServiceImpl implements PostService {
         myPostContentVO.setPostId(post.getId());
         myPostContentVO.setTitle(post.getTitle());
         myPostContentVO.setUpdateTime(post.getUpdateTime().toString());
-        myPostContentVO.setSectionName(sectionService.findSectionById(post.getSectionId()).getSectionName());
-        myPostContentVO.setCommentCount(post.getCommentCounts());
+        myPostContentVO.setSectionName(sectionService.findSectionById(post.getSectionId()).getName());
+        myPostContentVO.setCommentCount(post.getCommentCount());
         return myPostContentVO;
     }
 
@@ -270,7 +268,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public Result hotPost() {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(Post::getCommentCounts);
+        queryWrapper.orderByDesc(Post::getCommentCount);
         queryWrapper.eq(Post::getIsDeleted,false);
         queryWrapper.last("limit 10");
         List<Post> postList = postMapper.selectList(queryWrapper);
@@ -282,7 +280,7 @@ public class PostServiceImpl implements PostService {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getSectionId,1);
         queryWrapper.eq(Post::getIsDeleted,false);
-        queryWrapper.orderByDesc(Post::getCommentCounts);
+        queryWrapper.orderByDesc(Post::getCommentCount);
         queryWrapper.last("limit 10");
         List<Post> postList = postMapper.selectList(queryWrapper);
         return Result.success(copyList(postList));
@@ -318,7 +316,7 @@ public class PostServiceImpl implements PostService {
         folderPostVO.setPostId(post.getId());
         folderPostVO.setTitle(post.getTitle());
         Section sectionById = sectionService.findSectionById(post.getSectionId());
-        folderPostVO.setSectionName(sectionById.getSectionName());
+        folderPostVO.setSectionName(sectionById.getName());
         folderPostVO.setPosterName(userService.findUserById(post.getAuthorId()).getUsername());
         return folderPostVO;
     }

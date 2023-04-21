@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * 评论
  *
@@ -22,7 +24,7 @@ public class Comment {
     @TableId(type = IdType.AUTO)
     private Long id;
     private Long postId;
+    private Long bodyId;
     private Long authorId;
-    private String content;
-    private String createAt;
+    private LocalDateTime createAt;
 }

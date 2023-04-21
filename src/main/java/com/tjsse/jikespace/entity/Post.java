@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "jk_post")
+@TableName(value = "t_post")
 public class Post {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -40,11 +40,11 @@ public class Post {
 
     private Long subsectionId;
 
-    private Integer commentCounts;
+    private Integer commentCount;
 
     private Boolean isDeleted;
 
-    private Integer viewCounts;
+    private Integer viewCount;
 
     private Long bodyId;
 

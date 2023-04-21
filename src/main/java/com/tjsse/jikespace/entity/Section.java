@@ -34,5 +34,4 @@ public class Section {
 
     private Integer userCount;
 
-    private Boolean isBanned;
 }

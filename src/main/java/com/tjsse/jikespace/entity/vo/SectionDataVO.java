@@ -1,7 +1,6 @@
 package com.tjsse.jikespace.entity.vo;
 
 import com.tjsse.jikespace.entity.SubSection;
-import com.tjsse.jikespace.entity.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

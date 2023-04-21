@@ -5,8 +5,8 @@
 <mapper namespace="com.tjsse.jikespace.mapper.CommentMapper">
     <!--       List<Comment> findCommentsByPostId(Long postId);-->
     <select id="findCommentsByPostId" parameterType="Long" resultType="com.tjsse.jikespace.entity.Comment">
-        select * from jk_comment
+        select * from t_comment
         where id in
-              (select comment_id from jk_post_comment where post_id = #{postId})
+              (select comment_id from t_post_comment where post_id = #{postId})
     </select>
 </mapper>

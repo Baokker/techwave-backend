@@ -1,7 +1,7 @@
 package com.tjsse.jikespace.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.tjsse.jikespace.entity.CollectAndSection;
+import com.tjsse.jikespace.entity.CollectionAndSection;
 import com.tjsse.jikespace.entity.Section;
 import com.tjsse.jikespace.entity.SectionAndSubSection;
 import com.tjsse.jikespace.entity.SubSection;
@@ -16,7 +16,6 @@ import com.tjsse.jikespace.utils.Result;
 import com.tjsse.jikespace.utils.JKCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
@@ -57,15 +56,15 @@ public class SectionServiceImpl implements SectionService {
             return Result.fail(-1,"该版块不存在，参数有误",null);
         }
         SectionDataVO sectionDataVO = new SectionDataVO();
-        sectionDataVO.setSectionName(section.getSectionName());
-        sectionDataVO.setPostCounts(section.getPostCounts());
+        sectionDataVO.setSectionName(section.getName());
+        sectionDataVO.setPostCounts(section.getPostCount());
         if(userId!=null){
             sectionDataVO.setIsCollected(collectService.isUserCollectSection(userId,sectionId));
         }
         else{
             sectionDataVO.setIsCollected(false);
         }
-        sectionDataVO.setSectionSummary(section.getSectionSummary());
+        sectionDataVO.setSectionSummary(section.getDescription());
         sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
         sectionDataVO.setPostVOList(postService.findPostBySectionIdWithPage(sectionId,curPage,limit));
 
@@ -106,7 +105,7 @@ public class SectionServiceImpl implements SectionService {
 
         SectionPostsVO sectionPostsVO = new SectionPostsVO();
         sectionPostsVO.setPostDataVOList(postList);
-        sectionPostsVO.setTotal(section.getPostCounts());
+        sectionPostsVO.setTotal(section.getPostCount());
 
         return Result.success(20000,sectionPostsVO);
     }
@@ -119,23 +118,22 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     public Result collectSection(Integer userId) {
-        LambdaQueryWrapper<CollectAndSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectAndSection::getUserId,userId);
-        List<CollectAndSection> collectAndSections = collectAndSectionMapper.selectList(queryWrapper);
+        LambdaQueryWrapper<CollectionAndSection> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndSection::getUserId,userId);
+        List<CollectionAndSection> collectionAndSections = collectAndSectionMapper.selectList(queryWrapper);
 
-        if(collectAndSections.size()==0){
+        if(collectionAndSections.size()==0){
             List<CollectSectionVO> collectSectionVOS = new ArrayList<>();
             return Result.fail(20000,"okk",collectSectionVOS);
         }
 
         List<Long> sectionIdList = new ArrayList<>();
-        for (CollectAndSection collectAndSection :
-                collectAndSections) {
-            sectionIdList.add(collectAndSection.getSectionId());
+        for (CollectionAndSection collectionAndSection :
+                collectionAndSections) {
+            sectionIdList.add(collectionAndSection.getSectionId());
         }
 
         LambdaQueryWrapper<Section> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Section::getIsDeleted,false);
         queryWrapper1.in(Section::getId,sectionIdList);
         List<Section> sections = sectionMapper.selectList(queryWrapper1);
 
@@ -145,7 +143,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result hotSection(Integer i) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(Section::getPostCounts);
+        queryWrapper.orderByDesc(Section::getPostCount);
         queryWrapper.last("limit "+ i);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
 
@@ -155,8 +153,8 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result searchSection(String content) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.orderByDesc(Section::getPostCounts);
-        queryWrapper.like(Section::getSectionName,content);
+        queryWrapper.orderByDesc(Section::getPostCount);
+        queryWrapper.like(Section::getName,content);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
         return Result.success(20000,"okk",copyList(sections));
     }
@@ -176,8 +174,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result getUserSections(Long userId) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getAdminId,userId);
-        queryWrapper.eq(Section::getIsDeleted,false);
+        queryWrapper.eq(Section::getModeratorId,userId);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
         List<MySectionsVO> mySectionsVOList = copyToMySectionsVO(sections);
         Map<String,Object> map = new HashMap<>();
@@ -219,10 +216,10 @@ public class SectionServiceImpl implements SectionService {
         Long sectionId = changeIntroDTO.getSectionId();
         String sectionIntro = changeIntroDTO.getSectionIntro();
         Section section = this.findSectionById(sectionId);
-        if(!Objects.equals(userId, section.getAdminId())){
+        if(!Objects.equals(userId, section.getModeratorId())){
             return Result.fail(-1,"没有权限",null);
         }
-        section.setSectionSummary(sectionIntro);
+        section.setDescription(sectionIntro);
         sectionMapper.updateById(section);
         return Result.success(20000,"okk",null);
     }
@@ -241,18 +238,17 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result createSection(Long userId, String sectionName, String image, String sectionIntro, String[] subsection) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getSectionName,sectionName);
-        queryWrapper.eq(Section::getIsDeleted,false);
+        queryWrapper.eq(Section::getName,sectionName);
         queryWrapper.last("limit 1");
         Section section = sectionMapper.selectOne(queryWrapper);
         if(section!=null){
             return Result.fail(-1,"论坛里已有该版块",null);
         }
         Section section1 = new Section();
-        section1.setSectionName(sectionName);
-        section1.setSectionAvatar(image);
-        section1.setSectionSummary(sectionIntro);
-        section1.setAdminId(userId);
+        section1.setName(sectionName);
+        section1.setAvatar(image);
+        section1.setDescription(sectionIntro);
+        section1.setModeratorId(userId);
         sectionMapper.insert(section1);
         for(int i=0;i<subsection.length;i++){
             AddSubSectionDTO addSubSectionDTO = new AddSubSectionDTO(section1.getId(),subsection);
@@ -269,7 +265,7 @@ public class SectionServiceImpl implements SectionService {
         SectionAndSubSection sectionAndSubSection = sectionAndSubSectionMapper.selectOne(queryWrapper);
 
         Section section = this.findSectionById(sectionAndSubSection.getSectionId());
-        if(!Objects.equals(userId, section.getAdminId())){
+        if(!Objects.equals(userId, section.getModeratorId())){
             return Result.fail(-1,"没有权限",null);
         }
         sectionAndSubSectionMapper.deleteById(sectionAndSubSection);
@@ -295,7 +291,7 @@ public class SectionServiceImpl implements SectionService {
         queryWrapper.last("limit 1");
         Section section = sectionMapper.selectOne(queryWrapper1);
 
-        if(!Objects.equals(userId, section.getAdminId())){
+        if(!Objects.equals(userId, section.getModeratorId())){
             return Result.fail(-1,"没有权限",null);
         }
         List<SubSection> subSections = this.findSubSectionBySectionId(section.getId());
@@ -318,11 +314,11 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result changeSectionAvatar(Long userId, Long sectionId, String avatar) {
         Section section = this.findSectionById(sectionId);
-        if(!Objects.equals(userId, section.getAdminId())){
+        if(!Objects.equals(userId, section.getModeratorId())){
             return Result.fail(-1,"没有权限",null);
         }
         else {
-            section.setSectionAvatar(avatar);
+            section.setAvatar(avatar);
             sectionMapper.updateById(section);
             return Result.success(20000,"okk",null);
         }
@@ -341,11 +337,11 @@ public class SectionServiceImpl implements SectionService {
     private MySectionsVO copyToMySection(Section section) {
         MySectionsVO mySectionsVO = new MySectionsVO();
         mySectionsVO.setSectionId(section.getId());
-        mySectionsVO.setSectionAvatar(section.getSectionAvatar());
-        mySectionsVO.setSectionName(section.getSectionName());
-        mySectionsVO.setUserCounts(section.getUserCounts());
-        mySectionsVO.setPostCounts(section.getPostCounts());
-        mySectionsVO.setSectionIntro(section.getSectionSummary());
+        mySectionsVO.setSectionAvatar(section.getAvatar());
+        mySectionsVO.setSectionName(section.getName());
+        mySectionsVO.setUserCounts(section.getUserCount());
+        mySectionsVO.setPostCounts(section.getPostCount());
+        mySectionsVO.setSectionIntro(section.getDescription());
         mySectionsVO.setSubSectionList(findSubSectionBySectionId(section.getId()));
         return mySectionsVO;
     }
@@ -363,9 +359,9 @@ public class SectionServiceImpl implements SectionService {
     private CollectSectionVO copy(Section section) {
         CollectSectionVO collectSectionVO = new CollectSectionVO();
         collectSectionVO.setSectionId(section.getId());
-        collectSectionVO.setName(section.getSectionName());
-        collectSectionVO.setSummary(section.getSectionSummary());
-        collectSectionVO.setAvatar(section.getSectionAvatar());
+        collectSectionVO.setName(section.getName());
+        collectSectionVO.setSummary(section.getDescription());
+        collectSectionVO.setAvatar(section.getAvatar());
         return collectSectionVO;
     }
 }

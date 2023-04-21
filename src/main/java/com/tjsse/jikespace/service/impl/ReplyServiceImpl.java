@@ -40,10 +40,9 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = new Reply();
         reply.setCommentId(commentId);
         reply.setContent(content);
-        reply.setType("1");
         reply.setAuthorId(userId);
-        reply.setToUid(userService.findUserIdByCommentId(commentId));
-        reply.setUpdateTime(LocalDateTime.now());
+        reply.setToId(userService.findUserIdByCommentId(commentId));
+        reply.setCreatedAt(LocalDateTime.now());
         replyMapper.insert(reply);
 
         CommentAndReply commentAndReply = new CommentAndReply();
@@ -71,10 +70,9 @@ public class ReplyServiceImpl implements ReplyService {
         reply.setCommentId(reply1.getCommentId());
         reply.setParentId(replyId);
         reply.setContent(content);
-        reply.setType("2");
         reply.setAuthorId(userId);
-        reply.setToUid(this.findUserIdByReplyId(replyId));
-        reply.setUpdateTime(LocalDateTime.now());
+        reply.setToId(this.findUserIdByReplyId(replyId));
+        reply.setCreatedAt(LocalDateTime.now());
         replyMapper.insert(reply);
 
         return Result.success(20000,"操作成功",null);
@@ -111,7 +109,7 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public List<MyReplyVO> findRepliesByUserId(Long userId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getToUid,userId);
+        queryWrapper.eq(Reply::getToId,userId);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
         List<MyReplyVO> myReplyVOList = copyMyReplies(replies);
         return myReplyVOList;
@@ -128,7 +126,7 @@ public class ReplyServiceImpl implements ReplyService {
 
     private MyReplyVO copyMyReply(Reply reply) {
         MyReplyVO myReplyVO = new MyReplyVO();
-        myReplyVO.setTime(reply.getUpdateTime());
+        myReplyVO.setTime(reply.getCreatedAt());
         myReplyVO.setId(reply.getId());
         myReplyVO.setType("Reply");
         myReplyVO.setContent(reply.getContent());
@@ -147,10 +145,10 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyVO copy(Reply reply,Long userId) {
         ReplyVO replyVO = new ReplyVO();
         replyVO.setReplyId(reply.getId());
-        replyVO.setReplyTo(userService.findUserById(reply.getToUid()).getUsername());
+        replyVO.setReplyTo(userService.findUserById(reply.getToId()).getUsername());
         replyVO.setContent(reply.getContent());
         replyVO.setAuthorName(userService.findUserById(reply.getAuthorId()).getUsername());
-        replyVO.setUpdateTime(reply.getUpdateTime());
+        replyVO.setUpdateTime(reply.getCreatedAt());
         replyVO.setAbleToDelete(Objects.equals(userId, reply.getAuthorId()));
         return replyVO;
     }

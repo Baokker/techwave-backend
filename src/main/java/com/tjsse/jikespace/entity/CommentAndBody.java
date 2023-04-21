@@ -22,6 +22,5 @@ public class CommentAndBody {
     @TableId(type = IdType.AUTO)
     private Long id;
     private String content;
-    private String contentHtml;
     private Long commentId;
 }
