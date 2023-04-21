@@ -3,8 +3,8 @@ package com.tjsse.jikespace.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.tjsse.jikespace.auth_user.AppUser;
 import com.tjsse.jikespace.entity.Comment;
+import com.tjsse.jikespace.entity.Section;
 import com.tjsse.jikespace.entity.User;
 import com.tjsse.jikespace.entity.dto.EditEmailDTO;
 import com.tjsse.jikespace.entity.dto.PasswordDTO;
@@ -12,6 +12,7 @@ import com.tjsse.jikespace.entity.dto.UserInfoDTO;
 import com.tjsse.jikespace.entity.vo.UserDataVO;
 import com.tjsse.jikespace.entity.vo.UserVO;
 import com.tjsse.jikespace.mapper.CommentMapper;
+import com.tjsse.jikespace.mapper.SectionMapper;
 import com.tjsse.jikespace.mapper.UserMapper;
 import com.tjsse.jikespace.service.EmailService;
 import com.tjsse.jikespace.service.UserService;
@@ -19,8 +20,6 @@ import com.tjsse.jikespace.utils.JwtUtil;
 import com.tjsse.jikespace.utils.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +40,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private SectionMapper sectionMapper;
     @Autowired
     private CommentMapper commentMapper;
 
@@ -71,15 +72,19 @@ public class UserServiceImpl implements UserService {
         map.put("sectionId", null);
         roles.add(map);
 
-
         if (role != null && user.getIsModerator()) {
-            Map<String, Object> map1 = new HashMap<>();
-            map1.put("name","moderator");
-
-            map1.put("sectionId","");
-            roles.add(map1); // 版主身份
+            LambdaQueryWrapper<Section> queryWrapper =new LambdaQueryWrapper<>();
+            queryWrapper.eq(Section::getModeratorId,userIdFromToken).select(Section::getId);
+            List<Section> sections = sectionMapper.selectList(queryWrapper);
+            for (Section section: sections) {
+                Map<String, Object> map1 = new HashMap<>();
+                map1.put("name",section.getId());
+                roles.add(map1);
+                Map<String, Object> map2 = new HashMap<>();
+                map2.put("sectionId",section.getId());
+                roles.add(map2);
+            }
         }
-
         userVO.setRoles(roles);
         return Result.success(SUCCESS.getCode(), SUCCESS.getMsg(), userVO);
     }
