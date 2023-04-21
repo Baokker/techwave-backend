@@ -13,6 +13,9 @@ public enum JKCode {
     PWD_ERROR(10003, "密码错误"),
     TOKEN_ERROR(10004,"token不合法"),
     ACCOUNT_EXIST(10005,"账号已存在"),
+    EMAIL_EXIST(10006,"邮箱已存在"),
+    USERNAME_EXIST(10007,"用户名已存在"),
+
     NO_PERMISSION(70001,"无访问权限"),
     SESSION_TIME_OUT(90001,"会话超时"),
     NO_LOGIN(90002,"未登录"),
@@ -22,9 +25,6 @@ public enum JKCode {
     LOG_IN(20, "已登录"),
     LOG_OUT(30, "已登出"),
     BANNED(40, "已封禁"),
-
-    SELL_POST(50, "出售帖"),
-    BUY_POST(60, "求购帖"),
 
     // 存储到redis缓存时，对key加入统一前缀
     EMAIL_CODE_PREFIX(70, "email-"),

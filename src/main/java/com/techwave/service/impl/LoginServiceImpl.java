@@ -52,23 +52,27 @@ public class LoginServiceImpl implements LoginService {
             return Result.fail(JKCode.ACCOUNT_NOT_EXIST.getCode(), JKCode.ACCOUNT_EXIST.getMsg(), null);
         }
 
-        String jwt = JwtUtil.createJWT(admin.getId().toString(), "admin");
+        String jwt = JwtUtil.createJWT(admin.getId().toString());
 
-        if(jwt == null) {
+        if (jwt == null) {
             return Result.fail(JKCode.OTHER_ERROR.getCode(), "token 生成失败", null);
         }
         return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), jwt);
     }
 
     @Override
-    public Result createTokenByEmail(String email, String password) {
-
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("email", email);
-        User user = userMapper.selectOne(queryWrapper);
+    public Result createTokenByAccountOrEmail(String accountOrEmail, String password) {
+        QueryWrapper<User> queryEmailWrapper = new QueryWrapper<>();
+        queryEmailWrapper.eq("email", accountOrEmail);
+        User user = userMapper.selectOne(queryEmailWrapper);
 
         if (user == null) {
-            return Result.fail(JKCode.ACCOUNT_NOT_EXIST.getCode(), "用户不存在", null);
+            QueryWrapper<User> queryAccountWrapper = new QueryWrapper<>();
+            queryEmailWrapper.eq("account", accountOrEmail);
+            user = userMapper.selectOne(queryAccountWrapper);
+            if (user == null) {
+                return Result.fail(JKCode.ACCOUNT_NOT_EXIST.getCode(), "用户不存在", null);
+            }
         }
 
         boolean matches = passwordEncoder.matches(password, user.getPassword());
@@ -83,17 +87,16 @@ public class LoginServiceImpl implements LoginService {
         userUpdateWrapper.eq("id", user.getId())
                 .set("last_login_time", lastLoginTime)
                 .set("status", JKCode.LOG_IN.getCode());
+
         userMapper.update(null, userUpdateWrapper);
 
-        String jwt = JwtUtil.createJWT(user.getId().toString(), "user");
+        String jwt = JwtUtil.createJWT(user.getId().toString());
 
-        if(jwt == null) {
+        if (jwt == null) {
             return Result.fail(JKCode.OTHER_ERROR.getCode(), "token 生成失败", null);
         }
-        Map<String, String> map = new HashMap<>();
-        map.put("token", jwt);
 
-        return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), map);
+        return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), jwt);
     }
 
     @Override

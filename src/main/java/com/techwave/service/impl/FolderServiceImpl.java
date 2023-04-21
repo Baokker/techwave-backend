@@ -35,22 +35,22 @@ public class FolderServiceImpl implements FolderService {
     private CollectService collectService;
     @Autowired
     private PostService postService;
+
     @Override
     public Result createFolder(Long userId, String folderName) {
         LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndFolder::getUserId,userId);
-        queryWrapper.eq(CollectionAndFolder::getName,folderName);
+        queryWrapper.eq(CollectionAndFolder::getUserId, userId);
+        queryWrapper.eq(CollectionAndFolder::getName, folderName);
         queryWrapper.last("limit 1");
         CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
-        if(collectionAndFolder !=null){
-            return Result.fail(-1,"该文件夹名字重复",null);
-        }
-        else{
+        if (collectionAndFolder != null) {
+            return Result.fail(-1, "该文件夹名字重复", null);
+        } else {
             CollectionAndFolder collectionAndFolder1 = new CollectionAndFolder();
             collectionAndFolder1.setName(folderName);
             collectionAndFolder1.setUserId(userId);
             collectionAndFolderMapper.insert(collectionAndFolder1);
-            return Result.success(20000,"okk",null);
+            return Result.success(20000, "okk", null);
         }
     }
 
@@ -60,29 +60,28 @@ public class FolderServiceImpl implements FolderService {
         String folderName = renameFolderDTO.getFolderName();
 
         LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndFolder::getId,folderId);
-        queryWrapper.eq(CollectionAndFolder::getName,folderName);
+        queryWrapper.eq(CollectionAndFolder::getId, folderId);
+        queryWrapper.eq(CollectionAndFolder::getName, folderName);
         queryWrapper.last("limit 1");
         CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
-        if(collectionAndFolder ==null){
+        if (collectionAndFolder == null) {
             CollectionAndFolder collectionAndFolderById = this.findFolderById(folderId);
             collectionAndFolderById.setName(folderName);
             collectionAndFolderMapper.updateById(collectionAndFolderById);
-            return Result.success(20000,"okk",null);
-        }
-        else{
-            return Result.fail(-1,"已存在该名字的文件夹",null);
+            return Result.success(20000, "okk", null);
+        } else {
+            return Result.fail(-1, "已存在该名字的文件夹", null);
         }
     }
 
     @Override
     public Result getFolders(Long userId) {
         LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndFolder::getUserId,userId);
+        queryWrapper.eq(CollectionAndFolder::getUserId, userId);
         List<CollectionAndFolder> collectionAndFolders = collectionAndFolderMapper.selectList(queryWrapper);
         List<FolderVO> folderVOList = copyList(collectionAndFolders);
-        Map<String,Object> map = new HashMap<>();
-        map.put("folders",folderVOList);
+        Map<String, Object> map = new HashMap<>();
+        map.put("folders", folderVOList);
         return Result.success(map);
     }
 
@@ -91,47 +90,45 @@ public class FolderServiceImpl implements FolderService {
         Long folderId = folderPostDTO.getFolderId();
         Integer curPage = folderPostDTO.getCurPage();
         Integer limit = folderPostDTO.getLimit();
-        if(folderId==null||curPage==null||limit==null){
-            return Result.fail(-1,"参数有误",null);
+        if (folderId == null || curPage == null || limit == null) {
+            return Result.fail(-1, "参数有误", null);
         }
-        if(folderId==0){
+        if (folderId == 0) {
             LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(CollectionAndFolder::getUserId,userId);
+            queryWrapper.eq(CollectionAndFolder::getUserId, userId);
             queryWrapper.orderByAsc(CollectionAndFolder::getId);
             queryWrapper.last("limit 1");
             CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
             folderId = collectionAndFolder.getId();
         }
 
-        List<FolderPostVO> folderPostVOList = postService.findPostsByFolderIdWithPage(folderId,curPage,limit);
+        List<FolderPostVO> folderPostVOList = postService.findPostsByFolderIdWithPage(folderId, curPage, limit);
         CollectPostsVO collectPostsVO = new CollectPostsVO();
         collectPostsVO.setFolderPostDTOList(folderPostVOList);
-        if(folderPostVOList!=null){
+        if (folderPostVOList != null) {
             collectPostsVO.setTotal(folderPostVOList.size());
-        }
-        else{
+        } else {
             collectPostsVO.setTotal(0);
         }
 
 
-
-        return Result.success(20000,"okk",collectPostsVO);
+        return Result.success(20000, "okk", collectPostsVO);
     }
 
     @Override
     public Result deleteFolder(Long userId, Long folderId) {
         LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndFolder::getId,folderId);
+        queryWrapper.eq(CollectionAndFolder::getId, folderId);
         queryWrapper.last("limit 1");
         CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
-        if(collectionAndFolder ==null){
-            return Result.fail(-1,"参数有误",null);
+        if (collectionAndFolder == null) {
+            return Result.fail(-1, "参数有误", null);
         }
         collectionAndFolderMapper.deleteById(collectionAndFolder);
 
         collectService.deleteCollectPostByFolderId(folderId);
 
-        return Result.success(20000,"操作成功",null);
+        return Result.success(20000, "操作成功", null);
     }
 
     private List<FolderVO> copyList(List<CollectionAndFolder> collectionAndFolders) {
@@ -145,13 +142,13 @@ public class FolderServiceImpl implements FolderService {
 
     private FolderVO copy(CollectionAndFolder collectionAndFolder) {
         FolderVO folderVO = new FolderVO();
-        BeanUtils.copyProperties(collectionAndFolder,folderVO);
+        BeanUtils.copyProperties(collectionAndFolder, folderVO);
         return folderVO;
     }
 
     private CollectionAndFolder findFolderById(Long folderId) {
-        LambdaQueryWrapper<CollectionAndFolder> queryWrapper =new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndFolder::getId,folderId);
+        LambdaQueryWrapper<CollectionAndFolder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CollectionAndFolder::getId, folderId);
         queryWrapper.last("limit 1");
         CollectionAndFolder collectionAndFolder = collectionAndFolderMapper.selectOne(queryWrapper);
         return collectionAndFolder;

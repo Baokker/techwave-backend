@@ -11,6 +11,7 @@ import com.techwave.entity.dto.PasswordDTO;
 import com.techwave.entity.dto.UserInfoDTO;
 import com.techwave.entity.vo.UserDataVO;
 import com.techwave.entity.vo.UserVO;
+import com.techwave.mapper.AdminMapper;
 import com.techwave.utils.JKCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
@@ -39,6 +40,10 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AdminMapper adminMapper;
+
     @Autowired
     private SectionMapper sectionMapper;
     @Autowired
@@ -53,8 +58,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public Result getUserInfo(String token) {
         String userIdFromToken = JwtUtil.getUserIdFromToken(token);
-        String role = JwtUtil.getUserRoleFromToken(token);
+
         assert userIdFromToken != null;
+
         Integer userId = Integer.parseInt(userIdFromToken);
 
         UserVO userVO = new UserVO();
@@ -65,25 +71,40 @@ public class UserServiceImpl implements UserService {
         userVO.setUsername(user.getUsername());
         userVO.setAvatar(user.getAvatar());
 
+        // TODO: 修改角色查询
         List<Map<String, Object>> roles = new ArrayList<>();
-        Map<String, Object> map = new HashMap<>();
-        map.put("name", role);
-        map.put("sectionId", null);
-        roles.add(map);
 
-        if (role != null && user.getIsModerator()) {
-            LambdaQueryWrapper<Section> queryWrapper =new LambdaQueryWrapper<>();
-            queryWrapper.eq(Section::getModeratorId,userIdFromToken);
+        // check if is admin
+        if (adminMapper.selectById(userId) != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", "admin");
+            map.put("sectionId", null);
+            roles.add(map);
+        }
+
+        // check if is moderator
+        if (user.getIsModerator()) {
+            LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Section::getModeratorId, userIdFromToken);
             List<Section> sections = sectionMapper.selectList(queryWrapper);
-            for (Section section: sections) {
+            for (Section section : sections) {
                 Map<String, Object> map1 = new HashMap<>();
-                map1.put("name","moderator");
+                map1.put("name", "moderator");
+                //roles.add(map1);
+                //Map<String, Object> map2 = new HashMap<>();
+                map1.put("sectionId", section.getId());
                 roles.add(map1);
-                Map<String, Object> map2 = new HashMap<>();
-                map2.put("sectionId",section.getId());
-                roles.add(map2);
             }
         }
+
+        // if not admin or moderator
+        if (roles.size() == 0) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", "user");
+            map.put("sectionId", null);
+            roles.add(map);
+        }
+
         userVO.setRoles(roles);
         return Result.success(JKCode.SUCCESS.getCode(), JKCode.SUCCESS.getMsg(), userVO);
     }
@@ -91,15 +112,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserById(Long userId) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId,userId);
+        queryWrapper.eq(User::getId, userId);
         queryWrapper.last("limit 1");
         return userMapper.selectOne(queryWrapper);
     }
 
     @Override
     public Long findUserIdByCommentId(Long commentId) {
-        LambdaQueryWrapper<Comment> queryWrapper =new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getId,commentId);
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getId, commentId);
         queryWrapper.last("limit 1");
         Comment comment = commentMapper.selectOne(queryWrapper);
         return comment.getAuthorId();
@@ -141,38 +162,37 @@ public class UserServiceImpl implements UserService {
     public Result editEmail(Long userId, EditEmailDTO editEmailDTO) {
         String email = editEmailDTO.getEmail();
         String password = editEmailDTO.getPassword();
-        if(email==null||password==null){
-            return Result.fail(-1,"参数有误",null);
+        if (email == null || password == null) {
+            return Result.fail(-1, "参数有误", null);
         }
 
         User user = this.findUserById(userId);
         String password1 = user.getPassword();
         boolean matches = passwordEncoder.matches(password, password1);
-        if(matches){
-            if(Objects.equals(user.getEmail(), email)){
-                Map<String,Boolean> map= new HashMap<>();
-                map.put("result",false);
-                return Result.fail(-1,"新邮箱与原邮箱重复",map);
+        if (matches) {
+            if (Objects.equals(user.getEmail(), email)) {
+                Map<String, Boolean> map = new HashMap<>();
+                map.put("result", false);
+                return Result.fail(-1, "新邮箱与原邮箱重复", map);
             }
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(User::getEmail,email);
-            queryWrapper.eq(User::getIsDeleted,false);
+            queryWrapper.eq(User::getEmail, email);
+            queryWrapper.eq(User::getIsDeleted, false);
             List<User> users = userMapper.selectList(queryWrapper);
-            if(users.size()!=0){
-                Map<String,Boolean> map= new HashMap<>();
-                map.put("result",false);
-                return Result.fail(-1,"该邮箱已与其他账号绑定",map);
+            if (users.size() != 0) {
+                Map<String, Boolean> map = new HashMap<>();
+                map.put("result", false);
+                return Result.fail(-1, "该邮箱已与其他账号绑定", map);
             }
             user.setEmail(email);
             userMapper.updateById(user);
-            Map<String,Boolean> map= new HashMap<>();
-            map.put("result",true);
-            return Result.success(20000,"okk",map);
-        }
-        else{
-            Map<String,Boolean> map= new HashMap<>();
-            map.put("result",false);
-            return Result.success(20000,"密码错误",map);
+            Map<String, Boolean> map = new HashMap<>();
+            map.put("result", true);
+            return Result.success(20000, "okk", map);
+        } else {
+            Map<String, Boolean> map = new HashMap<>();
+            map.put("result", false);
+            return Result.success(20000, "密码错误", map);
         }
     }
 
@@ -181,8 +201,8 @@ public class UserServiceImpl implements UserService {
         User user = this.findUserById(userId);
 
         UserDataVO userVO = new UserDataVO();
-        BeanUtils.copyProperties(user,userVO);
-        return Result.success(20000,"okk",userVO);
+        BeanUtils.copyProperties(user, userVO);
+        return Result.success(20000, "okk", userVO);
     }
 
     @Override
@@ -191,8 +211,8 @@ public class UserServiceImpl implements UserService {
         String phone = userInfoDTO.getPhone();
         String intro = userInfoDTO.getIntro();
         String gender = userInfoDTO.getGender();
-        if(nickname==null||phone==null||intro==null||gender==null){
-            return Result.fail(-1,"参数有误",null);
+        if (nickname == null || phone == null || intro == null || gender == null) {
+            return Result.fail(-1, "参数有误", null);
         }
 
         User user = this.findUserById(userId);
@@ -204,36 +224,35 @@ public class UserServiceImpl implements UserService {
 
         userMapper.updateById(user);
 
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
     }
 
     @Override
     public Result editPassword(Long userId, PasswordDTO passwordDTO) {
         String newPassword = passwordDTO.getNewPassword();
         String oldPassword = passwordDTO.getOldPassword();
-        if(newPassword==null||oldPassword==null){
-            return Result.fail(-1,"参数错误",null);
+        if (newPassword == null || oldPassword == null) {
+            return Result.fail(-1, "参数错误", null);
         }
         User user = this.findUserById(userId);
         String password = user.getPassword();
         boolean matches = passwordEncoder.matches(oldPassword, password);
-        if(matches){
-            if ( oldPassword==newPassword){
-                Map<String,Boolean> map= new HashMap<>();
-                map.put("result",false);
-                return Result.fail(-1,"新密码与旧密码重复",map);
+        if (matches) {
+            if (oldPassword == newPassword) {
+                Map<String, Boolean> map = new HashMap<>();
+                map.put("result", false);
+                return Result.fail(-1, "新密码与旧密码重复", map);
             }
             String encodedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encodedPassword);
             userMapper.updateById(user);
-            Map<String,Boolean> map= new HashMap<>();
-            map.put("result",true);
-            return Result.success(20000,"okk",map);
-        }
-        else{
-            Map<String,Boolean> map= new HashMap<>();
-            map.put("result",false);
-            return Result.fail(-1,"密码错误或新密码与旧密码重复",map);
+            Map<String, Boolean> map = new HashMap<>();
+            map.put("result", true);
+            return Result.success(20000, "okk", map);
+        } else {
+            Map<String, Boolean> map = new HashMap<>();
+            map.put("result", false);
+            return Result.fail(-1, "密码错误或新密码与旧密码重复", map);
         }
     }
 

@@ -2,6 +2,7 @@ package com.techwave.controller;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.techwave.entity.dto.LoginDTO;
 import com.techwave.entity.dto.UserDTO;
 import com.techwave.utils.JKCode;
 import com.techwave.utils.JwtUtil;
@@ -34,15 +35,17 @@ public class UserController {
     private RegisterService registerService;
     @Autowired
     private UserService userInfoService;
+
     @PostMapping("register")
     public Result registerUser(@RequestBody UserDTO userDTO) {
-
         String username = userDTO.getUsername();
         String password = userDTO.getPassword();
         String email = userDTO.getEmail();
+        String account = userDTO.getAccount();
 
-        return registerService.register(username, password, email);
+        return registerService.register(username, password, email, account);
     }
+
     @GetMapping("send_email_code")
     public Result sendEmailCode(@RequestParam(value = "email") String email) {
         RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
@@ -63,21 +66,21 @@ public class UserController {
         }
         return userInfoService.forgetPassword(verifyCode, email, newPassword);
     }
+
     @GetMapping("info")
-    public Result getUserInfo(@RequestHeader("JK-Token") String token) {
+    public Result getUserInfo(@RequestHeader("T-Token") String token) {
         return userInfoService.getUserInfo(token);
     }
 
     @PostMapping("login")
-    public Result login(@RequestBody UserDTO userDTO) {
-        String username = userDTO.getUsername();
-        String password = userDTO.getPassword();
-        String email = userDTO.getEmail();
-        return loginService.createTokenByEmail(email, password);
+    public Result login(@RequestBody LoginDTO loginDTO) {
+        String accountOrEmail = loginDTO.getAccount();
+        String password = loginDTO.getPassword();
+        return loginService.createTokenByAccountOrEmail(accountOrEmail, password);
     }
 
     @PostMapping("logout")
-    public Result logout(@RequestHeader("JK-Token") String jk_token) {
+    public Result logout(@RequestHeader("T-Token") String jk_token) {
         String userIdStr = JwtUtil.getUserIdFromToken(jk_token);
         if (userIdStr == null) {
             return Result.fail(JKCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);

@@ -22,12 +22,12 @@ public class JwtUtil {
         return UUID.randomUUID().toString().replaceAll("-", "");
     }
 
-    public static String createJWT(String subject, String role) {
-        JwtBuilder builder = getJwtBuilder(subject, role, null, getUUID());
+    public static String createJWT(String subject) {
+        JwtBuilder builder = getJwtBuilder(subject, null, getUUID());
         return builder.compact();
     }
 
-    private static JwtBuilder getJwtBuilder(String subject, String role, Long ttlMillis, String uuid) {
+    private static JwtBuilder getJwtBuilder(String subject, Long ttlMillis, String uuid) {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
         SecretKey secretKey = generalKey();
         long nowMillis = System.currentTimeMillis();
@@ -40,7 +40,7 @@ public class JwtUtil {
         Date expDate = new Date(expMillis);
 
         Map<String, Object> map = new HashMap<>();
-        map.put("role", role);
+        //map.put("role", role);
         map.put("subject", subject);
 
         return Jwts.builder()
@@ -66,17 +66,17 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public static String getUserIdFromToken(String JK_Token) {
+    public static String getUserIdFromToken(String T_Token) {
 
-        if (!StringUtils.hasText(JK_Token) || !JK_Token.startsWith("Bearer ")) {
+        if (!StringUtils.hasText(T_Token) || !T_Token.startsWith("Bearer ")) {
             return null;
         }
 
-        JK_Token = JK_Token.substring(7);
+        T_Token = T_Token.substring(7);
 
         String userId;
         try {
-            Claims claims = JwtUtil.parseJWT(JK_Token);
+            Claims claims = JwtUtil.parseJWT(T_Token);
             Map<String, Object> map = new HashMap<>(claims);
             userId = map.get("subject").toString();
         } catch (Exception e) {
@@ -85,16 +85,16 @@ public class JwtUtil {
         return userId;
     }
 
-    public static String getUserRoleFromToken(String JK_Token) {
-        if (!StringUtils.hasText(JK_Token) || !JK_Token.startsWith("Bearer ")) {
+    public static String getUserRoleFromToken(String T_Token) {
+        if (!StringUtils.hasText(T_Token) || !T_Token.startsWith("Bearer ")) {
             return null;
         }
 
-        JK_Token = JK_Token.substring(7);
+        T_Token = T_Token.substring(7);
 
         String role;
         try {
-            Claims claims = JwtUtil.parseJWT(JK_Token);
+            Claims claims = JwtUtil.parseJWT(T_Token);
             Map<String, Object> map = new HashMap<>(claims);
             role = map.get("role").toString();
         } catch (Exception e) {
