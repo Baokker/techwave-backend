@@ -1,0 +1,174 @@
+package com.techwave.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.techwave.entity.Comment;
+import com.techwave.entity.CommentAndBody;
+import com.techwave.entity.PostAndComment;
+import com.techwave.entity.User;
+import com.techwave.entity.vo.CommentVO;
+import com.techwave.entity.vo.MyReplyVO;
+import com.techwave.entity.vo.ReplyVO;
+import com.techwave.utils.Result;
+import com.techwave.entity.dto.ReplyOnPostDTO;
+import com.techwave.mapper.CommentAndBodyMapper;
+import com.techwave.mapper.CommentMapper;
+import com.techwave.mapper.PostAndCommentMapper;
+import com.techwave.service.CommentService;
+import com.techwave.service.PostService;
+import com.techwave.service.ReplyService;
+import com.techwave.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 评论服务类的实现类
+ *
+ * @author wlf 1557177832@qq.com
+ * @version 2022/12/5 15:59
+ * @since JDK18
+ */
+@Service
+public class CommentServiceImpl implements CommentService {
+    @Autowired
+    private CommentMapper commentMapper;
+    @Autowired
+    private CommentAndBodyMapper commentAndBodyMapper;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private PostService postService;
+    @Autowired
+    private PostAndCommentMapper postAndCommentMapper;
+    @Autowired
+    private ReplyService replyService;
+
+    @Override
+    public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit) {
+        Page<Comment> commentPage = new Page<>(offset,limit);
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getPostId,postId);
+        Page<Comment> commentPage1 = commentMapper.selectPage(commentPage,queryWrapper);
+        List<Comment> records = commentPage1.getRecords();
+        List<CommentVO> commentVOList = this.copyList(records,userId);
+        return commentVOList;
+    }
+
+    @Override
+    public Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO) {
+        Long postId = replyOnPostDTO.getPostId();
+
+        postService.updatePostByCommentCount(postId,true);
+
+        String content = replyOnPostDTO.getContent();
+        Comment comment = new Comment();
+        comment.setPostId(postId);
+        comment.setAuthorId(userId);
+        comment.setCreateAt(LocalDateTime.now());
+        commentMapper.insert(comment);
+        CommentAndBody commentAndBody = new CommentAndBody();
+        commentAndBody.setCommentId(comment.getId());
+        commentAndBody.setContent(content);
+        commentAndBodyMapper.insert(commentAndBody);
+
+        comment.setBodyId(commentAndBody.getId());
+        commentMapper.updateById(comment);
+
+        PostAndComment postAndComment =new PostAndComment();
+        postAndComment.setPostId(postId);
+        postAndComment.setCommentId(comment.getId());
+        postAndCommentMapper.insert(postAndComment);
+
+        return Result.success(20000,"操作成功",null);
+    }
+
+    @Override
+    public Result deleteComment(Long userId, Long commentId) {
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Comment::getId,commentId);
+        queryWrapper.eq(Comment::getAuthorId,userId);
+        queryWrapper.last("limit 1");
+        Comment comment = commentMapper.selectOne(queryWrapper);
+        if(comment==null){
+            return Result.fail(-1,"参数有误",null);
+        }
+        commentMapper.updateById(comment);
+
+        LambdaQueryWrapper<PostAndComment> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(PostAndComment::getCommentId,commentId);
+        queryWrapper2.last("limit 1");
+        postAndCommentMapper.delete(queryWrapper2);
+
+        postService.updatePostByCommentCount(comment.getPostId(),false);
+        return Result.success(20000,"删除成功",null);
+    }
+
+    @Override
+    public List<MyReplyVO> findCommentsByUserId(Long userId) {
+        List<Long> postIds = postService.findPostIdsByUserId(userId);
+        if(postIds.size()==0){
+            List<MyReplyVO> myReplyVOList = new ArrayList<>();
+            return myReplyVOList;
+        }
+        LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Comment::getPostId,postIds);
+        List<Comment> commentList = commentMapper.selectList(queryWrapper);
+        List<MyReplyVO> myReplyVOList = copyMyComments(commentList);
+        return myReplyVOList;
+    }
+
+    private List<MyReplyVO> copyMyComments(List<Comment> commentList) {
+        List<MyReplyVO> myReplyVOList = new ArrayList<>();
+        for (Comment comment :
+                commentList) {
+            myReplyVOList.add(copyMyComment(comment));
+        }
+        return myReplyVOList;
+    }
+
+    private MyReplyVO copyMyComment(Comment comment) {
+        MyReplyVO myReplyVO = new MyReplyVO();
+        myReplyVO.setId(comment.getId());
+        myReplyVO.setTime(comment.getCreateAt());
+        myReplyVO.setType("Comment");
+        myReplyVO.setContent(this.findContentByBodyId(comment.getBodyId()));
+        return myReplyVO;
+    }
+
+    private List<CommentVO> copyList(List<Comment> commentList,Long userId) {
+        List<CommentVO> commentVOList = new ArrayList<>();
+        for (Comment comment :
+                commentList) {
+            commentVOList.add(copy(comment,userId));
+        }
+        return commentVOList;
+    }
+
+    private CommentVO copy(Comment comment,Long userId) {
+        CommentVO commentVO = new CommentVO();
+        User user = userService.findUserById(comment.getAuthorId());
+        commentVO.setCommentId(comment.getId());
+        commentVO.setAuthor(user.getUsername());
+        commentVO.setAvatar(user.getAvatar());
+        commentVO.setUpdateTime(comment.getCreateAt());
+        commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
+        commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
+        List<ReplyVO> replyVOList = new ArrayList<>();
+        replyVOList = replyService.findRepliesByCommentId(comment.getId(),userId);
+        commentVO.setReplyVOList(replyVOList);
+        return commentVO;
+    }
+
+    private String findContentByBodyId(Long bodyId) {
+        LambdaQueryWrapper<CommentAndBody> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CommentAndBody::getId,bodyId);
+        queryWrapper.last("limit 1");
+        String content = commentAndBodyMapper.selectOne(queryWrapper).getContent();
+        return content;
+    }
+}

@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.tjsse</groupId>
-    <artifactId>JiKeSpace</artifactId>
+    <artifactId>TechWave</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>JiKeSpace</name>
-    <description>JiKeSpace</description>
+    <name>TechWave</name>
+    <description>TechWave</description>
     <properties>
         <java.version>8</java.version>
     </properties>

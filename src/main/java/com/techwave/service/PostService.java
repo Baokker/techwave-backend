@@ -1,0 +1,33 @@
+package com.techwave.service;
+
+import com.techwave.entity.dto.PostPublishDTO;
+import com.techwave.entity.vo.FolderPostVO;
+import com.techwave.entity.vo.PostDataVO;
+import com.techwave.utils.Result;
+import com.techwave.entity.dto.PostDataDTO;
+
+import java.util.List;
+
+public interface PostService {
+    List<PostDataVO> findPostBySectionIdWithPage(Long sectionId, int curPage, int limit);
+    List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId,Long subsectionId,int curPage,int limit);
+
+
+    Result getPostData(Long userId, PostDataDTO postDataDTO);
+
+    Result hotPost();
+
+    Result getNews();
+
+    Result publishPost(Long userId, PostPublishDTO postPublishDTO);
+
+    void updatePostByCommentCount(Long postId, boolean b);
+
+    List<FolderPostVO> findPostsByFolderIdWithPage(Long folderId, Integer curPage, Integer limit);
+
+    Result findPostsByUserIdWithPage(Long userId, String type, Integer curPage, Integer limit);
+
+    Result deleteMyPost(Long postId, Long userId);
+
+    List<Long> findPostIdsByUserId(Long userId);
+}
