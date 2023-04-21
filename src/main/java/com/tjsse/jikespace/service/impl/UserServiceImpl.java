@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
             List<Section> sections = sectionMapper.selectList(queryWrapper);
             for (Section section: sections) {
                 Map<String, Object> map1 = new HashMap<>();
-                map1.put("name",section.getId());
+                map1.put("name","moderator");
                 roles.add(map1);
                 Map<String, Object> map2 = new HashMap<>();
                 map2.put("sectionId",section.getId());
