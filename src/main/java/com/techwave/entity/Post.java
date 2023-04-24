@@ -28,8 +28,6 @@ public class Post {
 
     private String title;
 
-    private String content;
-
     private String CreatedAt;
 
     private Boolean isPinned;
@@ -41,6 +39,8 @@ public class Post {
     private Long subsectionId;
 
     private Integer commentCount;
+
+    private Boolean isBanned;
 
     private Boolean isDeleted;
 

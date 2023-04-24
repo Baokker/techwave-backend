@@ -27,7 +27,6 @@ public class Reply {
     private Long id;
     private String content;
     private Long commentId;
-    private Long parentId;
     private Long authorId;
     private Long toId;
     private LocalDateTime createdAt;

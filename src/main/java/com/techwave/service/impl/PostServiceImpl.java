@@ -46,23 +46,23 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDataVO> findPostBySectionIdWithPage(Long sectionId, int curPage, int limit) {
-        Page<Post> page = new Page<>(curPage,limit);
+        Page<Post> page = new Page<>(curPage, limit);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getSectionId,sectionId);
-        queryWrapper.eq(Post::getIsDeleted,false);
-        Page<Post> postPage = postMapper.selectPage(page,queryWrapper);
+        queryWrapper.eq(Post::getSectionId, sectionId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        Page<Post> postPage = postMapper.selectPage(page, queryWrapper);
         List<PostDataVO> postDataVOList = copyList(postPage.getRecords());
         return postDataVOList;
     }
 
     @Override
     public List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId, Long subsectionId, int curPage, int limit) {
-        Page<Post> page = new Page<>(curPage,limit);
+        Page<Post> page = new Page<>(curPage, limit);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getSectionId,sectionId);
-        queryWrapper.in(Post::getSubsectionId,subsectionId);
-        queryWrapper.eq(Post::getIsDeleted,false);
-        Page<Post> postPage = postMapper.selectPage(page,queryWrapper);
+        queryWrapper.eq(Post::getSectionId, sectionId);
+        queryWrapper.in(Post::getSubsectionId, subsectionId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        Page<Post> postPage = postMapper.selectPage(page, queryWrapper);
         List<PostDataVO> postDataVOList = copyList(postPage.getRecords());
         return postDataVOList;
     }
@@ -71,30 +71,29 @@ public class PostServiceImpl implements PostService {
     @Override
     public Result getPostData(Long userId, PostDataDTO postDataDTO) {
         Long postId = postDataDTO.getId();
-        Integer offset = postDataDTO.getOffset();
-        Integer limit = postDataDTO.getLimit();
+        Integer pageNo = postDataDTO.getPage();
+        Integer pageSize = postDataDTO.getPerPage();
 
-        if(postId==null||offset==null||limit==null){
+        if (postId == null || pageNo == null || pageSize == null) {
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
         }
 
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getId,postId);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getId, postId);
+        queryWrapper.eq(Post::getIsDeleted, false);
         queryWrapper.last("limit 1");
         Post post = postMapper.selectOne(queryWrapper);
 
-        if(post==null){
-            return Result.fail(-1,"该帖子不存在",null);
+        if (post == null) {
+            return Result.fail(-1, "该帖子不存在", null);
         }
 
         PostVO postVO = new PostVO();
 
         postVO.setTitle(post.getTitle());
-        if(userId!=null){
-            postVO.setIsCollected(collectService.isUserCollectPost(userId,postId));
-        }
-        else{
+        if (userId != null) {
+            postVO.setIsCollected(collectService.isUserCollectPost(userId, postId));
+        } else {
             postVO.setIsCollected(false);
         }
 
@@ -111,37 +110,34 @@ public class PostServiceImpl implements PostService {
         postVO.setAvatar(user.getAvatar());
         postVO.setBrowseNumber(post.getViewCount());
 
-
-        if(post.getSubsectionId()==null){
+        if (post.getSubsectionId() == null) {
             postVO.setSubsectionId(null);
             postVO.setSubsectionName(null);
-        }
-        else {
+        } else {
             postVO.setSubsectionId(post.getSubsectionId());
             SubSection subSection = sectionService.findSubSectionById(post.getSubsectionId());
-            if(subSection==null){
+            if (subSection == null) {
                 postVO.setSubsectionName(null);
-            }
-            else {
+            } else {
                 postVO.setSubsectionName(subSection.getName());
             }
         }
 
-        postVO.setTotal(post.getCommentCount()+1);
-        postVO.setCommentVOList(commentService.findCommentVOsByPostIdWithPage(userId,postId,offset,limit)); //userId是发送请求的用户的id
+        postVO.setTotal(post.getCommentCount() + 1);
+        postVO.setCommentVOList(commentService.findCommentVOsByPostIdWithPage(userId, postId, pageNo, pageSize)); //userId是发送请求的用户的id
 
-        threadService.updateViewCount(postMapper,post); //通过线程池更新阅读数
+        threadService.updateViewCount(postMapper, post); //通过线程池更新阅读数
 
-        return Result.success(20000,postVO);
+        return Result.success(20000, postVO);
     }
 
     private String findBodyByPostId(Long postId) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getId,postId);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getId, postId);
+        queryWrapper.eq(Post::getIsDeleted, false);
         Post post = postMapper.selectOne(queryWrapper);
         LambdaQueryWrapper<PostAndBody> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(PostAndBody::getId,post.getBodyId());
+        queryWrapper1.eq(PostAndBody::getId, post.getBodyId());
         PostAndBody postAndBody = postAndBodyMapper.selectOne(queryWrapper1);
         return postAndBody.getContent();
     }
@@ -166,26 +162,26 @@ public class PostServiceImpl implements PostService {
         post.setBodyId(postAndBody.getId());
         postMapper.updateById(post);
 
-        sectionService.updateSectionByPostCount(postPublishDTO.getSectionId(),true);
-        return Result.success(20000,"操作成功",null);
+        sectionService.updateSectionByPostCount(postPublishDTO.getSectionId(), true);
+        return Result.success(20000, "操作成功", null);
     }
 
     @Override
     public void updatePostByCommentCount(Long postId, boolean b) {
         Post post = this.findPostById(postId);
-        threadService.updatePostByCommentCount(postMapper,post,true);
+        threadService.updatePostByCommentCount(postMapper, post, true);
     }
 
     @Override
     public List<FolderPostVO> findPostsByFolderIdWithPage(Long folderId, Integer curPage, Integer limit) {
         List<Long> postIds = collectService.findPostIdsByFolderId(folderId);
-        if(postIds==null||postIds.size()==0){
+        if (postIds == null || postIds.size() == 0) {
             return null;
         }
-        Page<Post> postPage = new Page<>(curPage,limit);
+        Page<Post> postPage = new Page<>(curPage, limit);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Post::getId,postIds);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.in(Post::getId, postIds);
+        queryWrapper.eq(Post::getIsDeleted, false);
         Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
         List<Post> records = postPage1.getRecords();
         return copyListFolder(records);
@@ -193,41 +189,40 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Result findPostsByUserIdWithPage(Long userId, String type, Integer curPage, Integer limit) {
-        Page<Post> postPage = new Page<>(curPage,limit);
+        Page<Post> postPage = new Page<>(curPage, limit);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getIsDeleted,false);
-        queryWrapper.eq(Post::getAuthorId,userId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        queryWrapper.eq(Post::getAuthorId, userId);
         Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
         List<Post> postList = postPage1.getRecords();
         MyPostVO myPostVO = new MyPostVO();
         myPostVO.setTotal(postList.size());
         myPostVO.setMyPosts(copyToMyPosts(postList));
-        return Result.success(20000,"okk",myPostVO);
+        return Result.success(20000, "okk", myPostVO);
     }
 
     @Override
     public Result deleteMyPost(Long postId, Long userId) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getId,postId);
-        queryWrapper.eq(Post::getAuthorId,userId);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getId, postId);
+        queryWrapper.eq(Post::getAuthorId, userId);
+        queryWrapper.eq(Post::getIsDeleted, false);
         Post post = postMapper.selectOne(queryWrapper);
-        if(post==null){
-            return Result.fail(-1,"参数有误",null);
-        }
-        else{
+        if (post == null) {
+            return Result.fail(-1, "参数有误", null);
+        } else {
             post.setIsDeleted(true);
             postMapper.updateById(post);
-            sectionService.updateSectionByPostCount(post.getSectionId(),false);
-            return Result.success(20000,"okk",null);
+            sectionService.updateSectionByPostCount(post.getSectionId(), false);
+            return Result.success(20000, "okk", null);
         }
     }
 
     @Override
     public List<Long> findPostIdsByUserId(Long userId) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getAuthorId,userId);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getAuthorId, userId);
+        queryWrapper.eq(Post::getIsDeleted, false);
         List<Post> postList = postMapper.selectList(queryWrapper);
         List<Long> postIds = new ArrayList<>();
         for (Post post :
@@ -259,7 +254,7 @@ public class PostServiceImpl implements PostService {
     private Post findPostById(Long postId) {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getId, postId);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getIsDeleted, false);
         queryWrapper.last("limit 1");
         Post post = postMapper.selectOne(queryWrapper);
         return post;
@@ -269,7 +264,7 @@ public class PostServiceImpl implements PostService {
     public Result hotPost() {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Post::getCommentCount);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getIsDeleted, false);
         queryWrapper.last("limit 10");
         List<Post> postList = postMapper.selectList(queryWrapper);
         return Result.success(copyList(postList));
@@ -278,8 +273,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public Result getNews() {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getSectionId,1);
-        queryWrapper.eq(Post::getIsDeleted,false);
+        queryWrapper.eq(Post::getSectionId, 1);
+        queryWrapper.eq(Post::getIsDeleted, false);
         queryWrapper.orderByDesc(Post::getCommentCount);
         queryWrapper.last("limit 10");
         List<Post> postList = postMapper.selectList(queryWrapper);
@@ -289,15 +284,15 @@ public class PostServiceImpl implements PostService {
 
     private List<PostDataVO> copyList(List<Post> postList) {
         List<PostDataVO> voList = new ArrayList<>();
-        for(Post post : postList){
-                voList.add(copy(post));
+        for (Post post : postList) {
+            voList.add(copy(post));
         }
         return voList;
     }
 
     private List<FolderPostVO> copyListFolder(List<Post> postList) {
         List<FolderPostVO> voList = new ArrayList<>();
-        for(Post post : postList){
+        for (Post post : postList) {
             voList.add(copyFolder(post));
         }
         return voList;
@@ -305,12 +300,12 @@ public class PostServiceImpl implements PostService {
 
     private PostDataVO copy(Post post) {
         PostDataVO postDataVO = new PostDataVO();
-        BeanUtils.copyProperties(post,postDataVO);
+        BeanUtils.copyProperties(post, postDataVO);
         postDataVO.setPoster(userService.findUserById(post.getAuthorId()).getUsername());
         return postDataVO;
     }
 
-    private FolderPostVO copyFolder(Post post){
+    private FolderPostVO copyFolder(Post post) {
         FolderPostVO folderPostVO = new FolderPostVO();
         folderPostVO.setTime(post.getUpdateTime());
         folderPostVO.setPostId(post.getId());

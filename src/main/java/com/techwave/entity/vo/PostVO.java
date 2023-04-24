@@ -31,4 +31,5 @@ public class PostVO {
     private String content;
     private String author;
     private List<CommentVO> commentVOList;
+    private Boolean isBanned;
 }

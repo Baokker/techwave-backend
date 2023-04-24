@@ -18,9 +18,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReplyVO {
     private Long replyId;
-    private LocalDateTime updateTime;
+    private LocalDateTime time;
     private String authorName;
-    private String replyTo;
+    private Long authorId;
+    private String toName;
+    private Long toId;
     private String content;
     private Boolean ableToDelete;
 }

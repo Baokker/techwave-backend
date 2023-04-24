@@ -26,5 +26,5 @@ public class Comment {
     private Long postId;
     private Long bodyId;
     private Long authorId;
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 }

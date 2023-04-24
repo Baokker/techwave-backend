@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 /**
  * @program: JiKeSpace
  * @description:
- * @packagename: com.tjsse.jikespace.service.impl
+ * @packagename: com.techwave.service.impl
  * @author: peng peng
  * @date: 2022-12-02 10:50
  **/
@@ -104,12 +104,12 @@ public class LoginServiceImpl implements LoginService {
                 .ne("status", TCode.LOG_OUT.getCode())
                 .set("status", TCode.LOG_OUT.getCode());
         int res = userMapper.update(null, userUpdateWrapper);
-        if (res == 0) {
-            return Result.fail(TCode.OTHER_ERROR.getCode(), "用户未找到或该用户已经登出", null);
-        } else if (res > 1) {
-            return Result.fail(TCode.OTHER_ERROR.getCode(), "登出多个用户", null);
-        } else {
+        //if (res == 0) {
+        //    return Result.fail(TCode.OTHER_ERROR.getCode(), "用户未找到或该用户已经登出", null);
+        //} else if (res > 1) {
+        //    return Result.fail(TCode.OTHER_ERROR.getCode(), "登出多个用户", null);
+        //} else {
             return Result.success(TCode.SUCCESS.getCode(), TCode.SUCCESS.getMsg(), null);
-        }
+        //}
     }
 }

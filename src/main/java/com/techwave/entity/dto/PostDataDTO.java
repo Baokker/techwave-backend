@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostDataDTO {
     private Long Id;
-    private Integer offset;
-    private Integer limit;
+    private Integer page;
+    private Integer perPage;
 }

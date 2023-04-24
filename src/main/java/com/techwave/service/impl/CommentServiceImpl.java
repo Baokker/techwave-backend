@@ -50,12 +50,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit) {
-        Page<Comment> commentPage = new Page<>(offset,limit);
+        Page<Comment> commentPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getPostId,postId);
-        Page<Comment> commentPage1 = commentMapper.selectPage(commentPage,queryWrapper);
+        queryWrapper.eq(Comment::getPostId, postId);
+        Page<Comment> commentPage1 = commentMapper.selectPage(commentPage, queryWrapper);
         List<Comment> records = commentPage1.getRecords();
-        List<CommentVO> commentVOList = this.copyList(records,userId);
+        List<CommentVO> commentVOList = this.copyList(records, userId);
         return commentVOList;
     }
 
@@ -63,60 +63,63 @@ public class CommentServiceImpl implements CommentService {
     public Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO) {
         Long postId = replyOnPostDTO.getPostId();
 
-        postService.updatePostByCommentCount(postId,true);
+        postService.updatePostByCommentCount(postId, true);
 
         String content = replyOnPostDTO.getContent();
         Comment comment = new Comment();
         comment.setPostId(postId);
         comment.setAuthorId(userId);
-        comment.setCreateAt(LocalDateTime.now());
+        comment.setCreatedAt(LocalDateTime.now());
+
         commentMapper.insert(comment);
+
         CommentAndBody commentAndBody = new CommentAndBody();
         commentAndBody.setCommentId(comment.getId());
         commentAndBody.setContent(content);
+
         commentAndBodyMapper.insert(commentAndBody);
 
         comment.setBodyId(commentAndBody.getId());
         commentMapper.updateById(comment);
 
-        PostAndComment postAndComment =new PostAndComment();
+        PostAndComment postAndComment = new PostAndComment();
         postAndComment.setPostId(postId);
         postAndComment.setCommentId(comment.getId());
         postAndCommentMapper.insert(postAndComment);
 
-        return Result.success(20000,"操作成功",null);
+        return Result.success(20000, "操作成功", null);
     }
 
     @Override
     public Result deleteComment(Long userId, Long commentId) {
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Comment::getId,commentId);
-        queryWrapper.eq(Comment::getAuthorId,userId);
+        queryWrapper.eq(Comment::getId, commentId);
+        queryWrapper.eq(Comment::getAuthorId, userId);
         queryWrapper.last("limit 1");
         Comment comment = commentMapper.selectOne(queryWrapper);
-        if(comment==null){
-            return Result.fail(-1,"参数有误",null);
+        if (comment == null) {
+            return Result.fail(-1, "参数有误", null);
         }
-        commentMapper.updateById(comment);
+        commentMapper.delete(queryWrapper);
 
         LambdaQueryWrapper<PostAndComment> queryWrapper2 = new LambdaQueryWrapper<>();
-        queryWrapper2.eq(PostAndComment::getCommentId,commentId);
+        queryWrapper2.eq(PostAndComment::getCommentId, commentId);
         queryWrapper2.last("limit 1");
         postAndCommentMapper.delete(queryWrapper2);
 
-        postService.updatePostByCommentCount(comment.getPostId(),false);
-        return Result.success(20000,"删除成功",null);
+        postService.updatePostByCommentCount(comment.getPostId(), false);
+        return Result.success(20000, "删除成功", null);
     }
 
     @Override
     public List<MyReplyVO> findCommentsByUserId(Long userId) {
         List<Long> postIds = postService.findPostIdsByUserId(userId);
-        if(postIds.size()==0){
+        if (postIds.size() == 0) {
             List<MyReplyVO> myReplyVOList = new ArrayList<>();
             return myReplyVOList;
         }
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(Comment::getPostId,postIds);
+        queryWrapper.in(Comment::getPostId, postIds);
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
         List<MyReplyVO> myReplyVOList = copyMyComments(commentList);
         return myReplyVOList;
@@ -134,39 +137,39 @@ public class CommentServiceImpl implements CommentService {
     private MyReplyVO copyMyComment(Comment comment) {
         MyReplyVO myReplyVO = new MyReplyVO();
         myReplyVO.setId(comment.getId());
-        myReplyVO.setTime(comment.getCreateAt());
+        myReplyVO.setTime(comment.getCreatedAt());
         myReplyVO.setType("Comment");
         myReplyVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         return myReplyVO;
     }
 
-    private List<CommentVO> copyList(List<Comment> commentList,Long userId) {
+    private List<CommentVO> copyList(List<Comment> commentList, Long userId) {
         List<CommentVO> commentVOList = new ArrayList<>();
         for (Comment comment :
                 commentList) {
-            commentVOList.add(copy(comment,userId));
+            commentVOList.add(copy(comment, userId));
         }
         return commentVOList;
     }
 
-    private CommentVO copy(Comment comment,Long userId) {
+    private CommentVO copy(Comment comment, Long userId) {
         CommentVO commentVO = new CommentVO();
         User user = userService.findUserById(comment.getAuthorId());
         commentVO.setCommentId(comment.getId());
         commentVO.setAuthor(user.getUsername());
         commentVO.setAvatar(user.getAvatar());
-        commentVO.setUpdateTime(comment.getCreateAt());
+        commentVO.setTime(comment.getCreatedAt());
         commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
         List<ReplyVO> replyVOList = new ArrayList<>();
-        replyVOList = replyService.findRepliesByCommentId(comment.getId(),userId);
+        replyVOList = replyService.findRepliesByCommentId(comment.getId(), userId);
         commentVO.setReplyVOList(replyVOList);
         return commentVO;
     }
 
     private String findContentByBodyId(Long bodyId) {
         LambdaQueryWrapper<CommentAndBody> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CommentAndBody::getId,bodyId);
+        queryWrapper.eq(CommentAndBody::getId, bodyId);
         queryWrapper.last("limit 1");
         String content = commentAndBodyMapper.selectOne(queryWrapper).getContent();
         return content;

@@ -14,9 +14,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * @program: JiKeSpace
+ * @program: TechWave
  * @description: service for images
- * @packagename: com.tjsse.jikespace.utils
+ * @packagename: com.techwave.utils
  * @author: peng peng
  * @date: 2022-12-04 11:32
  **/
@@ -70,7 +70,6 @@ public class OssService {
             e.printStackTrace();
             return null;
         }
-
 
     }
 

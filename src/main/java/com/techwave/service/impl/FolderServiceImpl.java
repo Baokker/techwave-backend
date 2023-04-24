@@ -12,7 +12,6 @@ import com.techwave.mapper.CollectionAndFolderMapper;
 import com.techwave.service.CollectService;
 import com.techwave.service.FolderService;
 import com.techwave.service.PostService;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -142,7 +141,9 @@ public class FolderServiceImpl implements FolderService {
 
     private FolderVO copy(CollectionAndFolder collectionAndFolder) {
         FolderVO folderVO = new FolderVO();
-        BeanUtils.copyProperties(collectionAndFolder, folderVO);
+        //BeanUtils.copyProperties(collectionAndFolder, folderVO);
+        folderVO.setId(collectionAndFolder.getId());
+        folderVO.setFolderName(collectionAndFolder.getName());
         return folderVO;
     }
 

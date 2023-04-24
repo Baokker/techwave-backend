@@ -33,6 +33,7 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyMapper replyMapper;
     @Autowired
     private CommentAndReplyMapper commentAndReplyMapper;
+
     @Override
     public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) {
         Long commentId = replyOnCommentDTO.getCommentId();
@@ -50,7 +51,7 @@ public class ReplyServiceImpl implements ReplyService {
         commentAndReply.setCommentId(commentId);
         commentAndReplyMapper.insert(commentAndReply);
 
-        return Result.success(20000,"操作成功",null);
+        return Result.success(20000, "操作成功", null);
     }
 
     @Override
@@ -59,57 +60,56 @@ public class ReplyServiceImpl implements ReplyService {
         String content = replyOnReplyDTO.getContent();
 
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getId,replyId);
+        queryWrapper.eq(Reply::getId, replyId);
         queryWrapper.last("limit 1");
         Reply reply1 = replyMapper.selectOne(queryWrapper);
-        if(reply1==null){
-            return Result.fail(-1,"要回复的回复不存在",null);
+        if (reply1 == null) {
+            return Result.fail(-1, "要回复的回复不存在", null);
         }
 
         Reply reply = new Reply();
         reply.setCommentId(reply1.getCommentId());
-        reply.setParentId(replyId);
         reply.setContent(content);
         reply.setAuthorId(userId);
         reply.setToId(this.findUserIdByReplyId(replyId));
         reply.setCreatedAt(LocalDateTime.now());
         replyMapper.insert(reply);
 
-        return Result.success(20000,"操作成功",null);
+        return Result.success(20000, "操作成功", null);
     }
 
     @Override
     public Result deleteReply(Long userId, Long replyId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getId,replyId);
+        queryWrapper.eq(Reply::getId, replyId);
         queryWrapper.last("limit 1");
         Reply reply = replyMapper.selectOne(queryWrapper);
-        if(reply==null){
-            return Result.fail(-1,"参数有误",null);
+        if (reply == null) {
+            return Result.fail(-1, "参数有误", null);
         }
         replyMapper.delete(queryWrapper);
 
         LambdaQueryWrapper<CommentAndReply> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(CommentAndReply::getReplyId,replyId);
+        queryWrapper1.eq(CommentAndReply::getReplyId, replyId);
         queryWrapper1.last("limit 1");
         commentAndReplyMapper.delete(queryWrapper1);
 
-        return Result.success(20000,"操作成功",null);
+        return Result.success(20000, "操作成功", null);
     }
 
     @Override
     public List<ReplyVO> findRepliesByCommentId(Long id, Long userId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getCommentId,id);
+        queryWrapper.eq(Reply::getCommentId, id);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
-        List<ReplyVO> replyVOList = copyReplies(replies,userId);
+        List<ReplyVO> replyVOList = copyReplies(replies, userId);
         return replyVOList;
     }
 
     @Override
     public List<MyReplyVO> findRepliesByUserId(Long userId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getToId,userId);
+        queryWrapper.eq(Reply::getToId, userId);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
         List<MyReplyVO> myReplyVOList = copyMyReplies(replies);
         return myReplyVOList;
@@ -133,29 +133,31 @@ public class ReplyServiceImpl implements ReplyService {
         return myReplyVO;
     }
 
-    private List<ReplyVO> copyReplies(List<Reply> replies,Long userId) {
+    private List<ReplyVO> copyReplies(List<Reply> replies, Long userId) {
         List<ReplyVO> replyVOList = new ArrayList<>();
         for (Reply reply :
                 replies) {
-            replyVOList.add(copy(reply,userId));
+            replyVOList.add(copy(reply, userId));
         }
         return replyVOList;
     }
 
-    private ReplyVO copy(Reply reply,Long userId) {
+    private ReplyVO copy(Reply reply, Long userId) {
         ReplyVO replyVO = new ReplyVO();
         replyVO.setReplyId(reply.getId());
-        replyVO.setReplyTo(userService.findUserById(reply.getToId()).getUsername());
+        replyVO.setTime(reply.getCreatedAt());
+        replyVO.setToName(userService.findUserById(reply.getToId()).getUsername());
+        replyVO.setToId(reply.getToId());
         replyVO.setContent(reply.getContent());
+        replyVO.setAuthorId(reply.getAuthorId());
         replyVO.setAuthorName(userService.findUserById(reply.getAuthorId()).getUsername());
-        replyVO.setUpdateTime(reply.getCreatedAt());
         replyVO.setAbleToDelete(Objects.equals(userId, reply.getAuthorId()));
         return replyVO;
     }
 
     private Long findUserIdByReplyId(Long replyId) {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Reply::getId,replyId);
+        queryWrapper.eq(Reply::getId, replyId);
         queryWrapper.last("limit 1");
         Reply reply = replyMapper.selectOne(queryWrapper);
         return reply.getAuthorId();

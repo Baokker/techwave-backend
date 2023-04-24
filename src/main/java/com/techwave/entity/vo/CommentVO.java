@@ -21,7 +21,7 @@ public class CommentVO {
     private Long commentId;
     private String author;
     private String avatar;
-    private LocalDateTime updateTime;
+    private LocalDateTime time;
     private String content;
     private Boolean ableToDelete;
     private List<ReplyVO> replyVOList;
