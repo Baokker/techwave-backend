@@ -44,7 +44,7 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public Result createTokenByAdminName(String adminName, String password) {
         QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("admin_name", adminName);
+        queryWrapper.eq("username", adminName);
         Admin admin = adminMapper.selectOne(queryWrapper);
         if (admin == null) {
             return Result.fail(TCode.ACCOUNT_NOT_EXIST.getCode(), TCode.ACCOUNT_EXIST.getMsg(), null);

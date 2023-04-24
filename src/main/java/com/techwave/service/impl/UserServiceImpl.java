@@ -3,6 +3,7 @@ package com.techwave.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.techwave.entity.Admin;
 import com.techwave.entity.Comment;
 import com.techwave.entity.Section;
 import com.techwave.entity.User;
@@ -63,6 +64,22 @@ public class UserServiceImpl implements UserService {
 
         Integer userId = Integer.parseInt(userIdFromToken);
 
+        List<Map<String, Object>> roles = new ArrayList<>();
+
+        // check if is admin
+        Admin admin = adminMapper.selectById(userId);
+        if (admin != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", "admin");
+            map.put("sectionId", null);
+            roles.add(map);
+
+            UserVO userVO = new UserVO();
+            userVO.setUsername(admin.getUsername());
+            userVO.setRoles(roles);
+            return Result.success(TCode.SUCCESS.getCode(), TCode.SUCCESS.getMsg(), userVO);
+        }
+
         UserVO userVO = new UserVO();
         User user = userMapper.selectById(userId);
         if (user == null) {
@@ -71,16 +88,6 @@ public class UserServiceImpl implements UserService {
         userVO.setUsername(user.getUsername());
         userVO.setAvatar(user.getAvatar());
 
-        // TODO: 修改角色查询
-        List<Map<String, Object>> roles = new ArrayList<>();
-
-        // check if is admin
-        if (adminMapper.selectById(userId) != null) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("name", "admin");
-            map.put("sectionId", null);
-            roles.add(map);
-        }
 
         // check if is moderator
         if (user.getIsModerator()) {

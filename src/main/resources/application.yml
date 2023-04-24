@@ -18,7 +18,7 @@ spring:
         min-idle: 0
 
 server:
-  port: 3366
+  port: 8888
 
     #mybatis-plus:
     #  configuration:
