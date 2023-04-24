@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class FolderPostDTO {
     private Long folderId;
-    private Integer curPage;
-    private Integer limit;
+    private Integer page;
+    private Integer perPage;
 }

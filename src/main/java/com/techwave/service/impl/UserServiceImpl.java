@@ -214,17 +214,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Result editUserInfo(Long userId, UserInfoDTO userInfoDTO) {
-        String nickname = userInfoDTO.getNickname();
+        String username = userInfoDTO.getUsername();
         String phone = userInfoDTO.getPhone();
         String intro = userInfoDTO.getIntro();
         String gender = userInfoDTO.getGender();
-        if (nickname == null || phone == null || intro == null || gender == null) {
+        if (username == null || phone == null || intro == null || gender == null) {
             return Result.fail(-1, "参数有误", null);
         }
 
         User user = this.findUserById(userId);
 
-        user.setUsername(nickname);
+        user.setUsername(username);
         user.setPhoneNumber(phone);
         user.setGender(gender);
         user.setSummary(intro);

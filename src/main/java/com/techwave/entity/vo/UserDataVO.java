@@ -14,11 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserDataVO {
     private String username;
-    private String nickname;
+    private String account;
     private String summary;
     private String email;
     private String gender;
     private String phoneNumber;
     private String avatar;
-    private String studentId;
 }

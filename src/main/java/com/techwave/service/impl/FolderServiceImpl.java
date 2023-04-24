@@ -88,8 +88,8 @@ public class FolderServiceImpl implements FolderService {
     @Override
     public Result getCollectInfo(Long userId, FolderPostDTO folderPostDTO) {
         Long folderId = folderPostDTO.getFolderId();
-        Integer curPage = folderPostDTO.getCurPage();
-        Integer limit = folderPostDTO.getLimit();
+        Integer curPage = folderPostDTO.getPage();
+        Integer limit = folderPostDTO.getPerPage();
         if (folderId == null || curPage == null || limit == null) {
             return Result.fail(-1, "参数有误", null);
         }

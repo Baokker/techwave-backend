@@ -57,7 +57,11 @@ public class RegisterServiceImpl implements RegisterService {
                 .username(username)
                 .password(encodedPassword)
                 .email(email)
+                .avatar("https://moe.photo/images/2023/04/23/avatar.jpg")
                 .account(account)
+                .gender("未知")
+                .phoneNumber("11111111111")
+                .summary("这个人很懒，什么都没有留下~")
                 .build();
 
         int insert = userMapper.insert(user);

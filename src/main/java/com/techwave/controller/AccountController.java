@@ -147,13 +147,13 @@ public class AccountController {
 
     @GetMapping(value = "collect")
     public Result getCollectInfo(@RequestHeader("T-Token") String token,Long folderId
-            ,Integer curPage, Integer limit){
+            ,Integer page, Integer perPage){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
-        FolderPostDTO folderPostDTO = new FolderPostDTO(folderId,curPage,limit);
+        FolderPostDTO folderPostDTO = new FolderPostDTO(folderId,page,perPage);
         return folderService.getCollectInfo(userId,folderPostDTO);
     }
 
