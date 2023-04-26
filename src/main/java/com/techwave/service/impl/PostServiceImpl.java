@@ -56,8 +56,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId, Long subsectionId, int curPage, int limit) {
-        Page<Post> page = new Page<>(curPage, limit);
+    public List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId, Long subsectionId, int curPage, int perPage) {
+        Page<Post> page = new Page<>(curPage, perPage);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getSectionId, sectionId);
         queryWrapper.in(Post::getSubsectionId, subsectionId);
@@ -109,6 +109,7 @@ public class PostServiceImpl implements PostService {
         postVO.setAuthor(user.getUsername());
         postVO.setAvatar(user.getAvatar());
         postVO.setBrowseNumber(post.getViewCount());
+        postVO.setLikeCount(post.getLikeCount());
 
         if (post.getSubsectionId() == null) {
             postVO.setSubsectionId(null);
@@ -151,6 +152,7 @@ public class PostServiceImpl implements PostService {
         post.setSubsectionId(postPublishDTO.getSubsectionId());
         post.setAuthorId(userId);
         post.setIsDeleted(false);
+        post.setIsBanned(false);
         post.setUpdateTime(LocalDateTime.now());
         this.postMapper.insert(post);
 
@@ -301,7 +303,9 @@ public class PostServiceImpl implements PostService {
     private PostDataVO copy(Post post) {
         PostDataVO postDataVO = new PostDataVO();
         BeanUtils.copyProperties(post, postDataVO);
-        postDataVO.setPoster(userService.findUserById(post.getAuthorId()).getUsername());
+        postDataVO.setAuthor(userService.findUserById(post.getAuthorId()).getUsername());
+        postDataVO.setTime(post.getUpdateTime());
+
         return postDataVO;
     }
 

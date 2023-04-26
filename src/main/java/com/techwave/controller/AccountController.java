@@ -68,7 +68,7 @@ public class AccountController {
         Long userId = Long.parseLong(userIdStr);
         return userInfoService.getUserInformation(userId);
     }
-    @GetMapping("{{target_id}}/card")
+    @GetMapping("{target_id}/card")
     public Result getUserCard(@RequestHeader("T-Token") String token, @PathVariable String target_id){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {

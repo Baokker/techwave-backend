@@ -18,15 +18,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SectionDataVO {
-    private String sectionName;
+    private String name;
 
-    private Integer postCounts;
+    private String avatar;
 
-    private Boolean isCollected;
+    private Integer followCount;
 
-    private String sectionSummary;
+    private Boolean isFollowed;
+
+    private String summary;
 
     private List<SubSection> subSectionList;
-
-    private List<PostDataVO> postVOList;
 }

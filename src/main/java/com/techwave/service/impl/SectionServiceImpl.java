@@ -1,22 +1,17 @@
 package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.techwave.entity.CollectionAndSection;
-import com.techwave.entity.Section;
-import com.techwave.entity.SectionAndSubSection;
-import com.techwave.entity.SubSection;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.techwave.entity.*;
 import com.techwave.entity.dto.*;
 import com.techwave.entity.vo.*;
+import com.techwave.mapper.*;
 import com.techwave.service.CollectService;
 import com.techwave.service.PostService;
 import com.techwave.service.SectionService;
 import com.techwave.service.ThreadService;
 import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
-import com.techwave.mapper.CollectAndSectionMapper;
-import com.techwave.mapper.SectionAndSubSectionMapper;
-import com.techwave.mapper.SectionMapper;
-import com.techwave.mapper.SubSectionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,39 +40,42 @@ public class SectionServiceImpl implements SectionService {
     private PostService postService;
     @Autowired
     private ThreadService threadService;
+    @Autowired
+    private PostMapper postMapper;
+
     @Override
     public Result getSectionData(Long userId, SectionDataDTO sectionDataDTO) {
         Long sectionId = sectionDataDTO.getSectionId();
-        Integer curPage = sectionDataDTO.getCurPage();
-        Integer limit = sectionDataDTO.getLimit();
+        Integer page = sectionDataDTO.getPage();
+        Integer perPage = sectionDataDTO.getPerPage();
 
-        if(sectionId==null||curPage==null||limit==null)
-            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
+        if (sectionId == null || page == null || perPage == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
 
         Section section = this.findSectionById(sectionId);
-        if(section==null){
-            return Result.fail(-1,"该版块不存在，参数有误",null);
+        if (section == null) {
+            return Result.fail(-1, "该版块不存在，参数有误", null);
         }
         SectionDataVO sectionDataVO = new SectionDataVO();
-        sectionDataVO.setSectionName(section.getName());
-        sectionDataVO.setPostCounts(section.getPostCount());
-        if(userId!=null){
-            sectionDataVO.setIsCollected(collectService.isUserCollectSection(userId,sectionId));
-        }
-        else{
-            sectionDataVO.setIsCollected(false);
-        }
-        sectionDataVO.setSectionSummary(section.getDescription());
-        sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
-        sectionDataVO.setPostVOList(postService.findPostBySectionIdWithPage(sectionId,curPage,limit));
+        sectionDataVO.setName(section.getName());
+        sectionDataVO.setAvatar(section.getAvatar());
+        sectionDataVO.setFollowCount(section.getUserCount());
 
-        return Result.success(20000,"okk",sectionDataVO);
+        if (userId != null) {
+            sectionDataVO.setIsFollowed(collectService.isUserCollectSection(userId, sectionId));
+        } else {
+            sectionDataVO.setIsFollowed(false);
+        }
+        sectionDataVO.setSummary(section.getDescription());
+        sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
+
+        return Result.success(20000, "okk", sectionDataVO);
     }
 
     @Override
     public Section findSectionById(Long sectionId) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getId,sectionId);
+        queryWrapper.eq(Section::getId, sectionId);
         queryWrapper.last("limit 1");
         return this.sectionMapper.selectOne(queryWrapper);
     }
@@ -85,7 +83,7 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public SubSection findSubSectionById(Long subsectionId) {
         LambdaQueryWrapper<SubSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SubSection::getId,subsectionId);
+        queryWrapper.eq(SubSection::getId, subsectionId);
         queryWrapper.last("limit 1");
         return this.subSectionMapper.selectOne(queryWrapper);
     }
@@ -94,23 +92,26 @@ public class SectionServiceImpl implements SectionService {
     public Result getPostsByTag(PostsWithTagDTO postsWithTagDTO) {
         Long sectionId = postsWithTagDTO.getSectionId();
         Long subsectionId = postsWithTagDTO.getSubsectionId();
-        Integer curPage = postsWithTagDTO.getCurPage();
-        Integer limit = postsWithTagDTO.getLimit();
+        Integer page = postsWithTagDTO.getPage();
+        Integer perPage = postsWithTagDTO.getPerPage();
 
-        if(sectionId==null||subsectionId==null||curPage==null||limit==null)
-            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
+        if (sectionId == null || subsectionId == null || page == null || perPage == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
         Section section = this.findSectionById(sectionId);
-        if(section==null){
-            return Result.fail(-1,"该版块不存在，参数有误",null);
+        if (section == null) {
+            return Result.fail(-1, "该版块不存在，参数有误", null);
         }
 
-        List<PostDataVO> postList = postService.findPostBySectionIdAndSubSectionId(sectionId, subsectionId, curPage, limit);
+        List<PostDataVO> postList = postService.findPostBySectionIdAndSubSectionId(sectionId, subsectionId, page, perPage);
 
         SectionPostsVO sectionPostsVO = new SectionPostsVO();
         sectionPostsVO.setPostDataVOList(postList);
-        sectionPostsVO.setTotal(section.getPostCount());
 
-        return Result.success(20000,sectionPostsVO);
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("subsection_id", subsectionId);
+        sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
+
+        return Result.success(20000, sectionPostsVO);
     }
 
     @Override
@@ -122,12 +123,12 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result collectSection(Integer userId) {
         LambdaQueryWrapper<CollectionAndSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CollectionAndSection::getUserId,userId);
+        queryWrapper.eq(CollectionAndSection::getUserId, userId);
         List<CollectionAndSection> collectionAndSections = collectAndSectionMapper.selectList(queryWrapper);
 
-        if(collectionAndSections.size()==0){
+        if (collectionAndSections.size() == 0) {
             List<CollectSectionVO> collectSectionVOS = new ArrayList<>();
-            return Result.fail(20000,"okk",collectSectionVOS);
+            return Result.fail(20000, "okk", collectSectionVOS);
         }
 
         List<Long> sectionIdList = new ArrayList<>();
@@ -137,51 +138,51 @@ public class SectionServiceImpl implements SectionService {
         }
 
         LambdaQueryWrapper<Section> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.in(Section::getId,sectionIdList);
+        queryWrapper1.in(Section::getId, sectionIdList);
         List<Section> sections = sectionMapper.selectList(queryWrapper1);
 
-        return Result.success(20000,"okk",copyList(sections));
+        return Result.success(20000, "okk", copyList(sections));
     }
 
     @Override
     public Result hotSection(Integer i) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Section::getPostCount);
-        queryWrapper.last("limit "+ i);
+        queryWrapper.last("limit " + i);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
 
-        return Result.success(20000,"okk",copyList(sections));
+        return Result.success(20000, "okk", copyList(sections));
     }
 
     @Override
     public Result searchSection(String content) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Section::getPostCount);
-        queryWrapper.like(Section::getName,content);
+        queryWrapper.like(Section::getName, content);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
-        return Result.success(20000,"okk",copyList(sections));
+        return Result.success(20000, "okk", copyList(sections));
     }
 
     @Override
     public void updateSectionByCollectCount(Long sectionId, boolean b) {
         Section section = this.findSectionById(sectionId);
-        threadService.updateSectionByCollectCount(sectionMapper,section,b);
+        threadService.updateSectionByCollectCount(sectionMapper, section, b);
     }
 
     @Override
     public void updateSectionByPostCount(Long sectionId, boolean b) {
         Section section = this.findSectionById(sectionId);
-        threadService.updateSectionByPostCount(sectionMapper,section,b);
+        threadService.updateSectionByPostCount(sectionMapper, section, b);
     }
 
     @Override
     public Result getUserSections(Long userId) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getModeratorId,userId);
+        queryWrapper.eq(Section::getModeratorId, userId);
         List<Section> sections = sectionMapper.selectList(queryWrapper);
         List<MySectionsVO> mySectionsVOList = copyToMySectionsVO(sections);
-        Map<String,Object> map = new HashMap<>();
-        map.put("sectionInfo",mySectionsVOList);
+        Map<String, Object> map = new HashMap<>();
+        map.put("sectionInfo", mySectionsVOList);
         return Result.success(map);
     }
 
@@ -189,13 +190,13 @@ public class SectionServiceImpl implements SectionService {
     public Result addSubSection(AddSubSectionDTO addSubSectionDTO) {
         String[] subsections = addSubSectionDTO.getSubsections();
         Long sectionId = addSubSectionDTO.getSectionId();
-        if(subsections.length==0){
-            return Result.fail(-1,"参数有误",null);
+        if (subsections.length == 0) {
+            return Result.fail(-1, "参数有误", null);
         }
-        Boolean flag =false;
+        Boolean flag = false;
         for (String name :
                 subsections) {
-            if(this.isSubSectionLegal(sectionId,name)){
+            if (this.isSubSectionLegal(sectionId, name)) {
                 SubSection subSection = new SubSection();
                 subSection.setName(name);
                 subSectionMapper.insert(subSection);
@@ -203,15 +204,14 @@ public class SectionServiceImpl implements SectionService {
                 sectionAndSubSection.setSectionId(sectionId);
                 sectionAndSubSection.setSubsectionId(subSection.getId());
                 sectionAndSubSectionMapper.insert(sectionAndSubSection);
-            }
-            else {
+            } else {
                 flag = true;
             }
         }
-        if(flag){
-            return Result.success(20000,"重复名的版块未创建",null);
+        if (flag) {
+            return Result.success(20000, "重复名的版块未创建", null);
         }
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
     }
 
     @Override
@@ -219,19 +219,44 @@ public class SectionServiceImpl implements SectionService {
         Long sectionId = changeIntroDTO.getSectionId();
         String sectionIntro = changeIntroDTO.getSectionIntro();
         Section section = this.findSectionById(sectionId);
-        if(!Objects.equals(userId, section.getModeratorId())){
-            return Result.fail(-1,"没有权限",null);
+        if (!Objects.equals(userId, section.getModeratorId())) {
+            return Result.fail(-1, "没有权限", null);
         }
         section.setDescription(sectionIntro);
         sectionMapper.updateById(section);
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
+    }
+
+    @Override
+    public Result getAllPostsInSection(SectionDataDTO sectionDataDTO) {
+        Long sectionId = sectionDataDTO.getSectionId();
+        Integer page = sectionDataDTO.getPage();
+        Integer perPage = sectionDataDTO.getPerPage();
+
+        if (sectionId == null || page == null || perPage == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
+        Section section = this.findSectionById(sectionId);
+        if (section == null) {
+            return Result.fail(-1, "该版块不存在，参数有误", null);
+        }
+
+        List<PostDataVO> postList = postService.findPostBySectionIdWithPage(sectionId, page, perPage);
+
+        SectionPostsVO sectionPostsVO = new SectionPostsVO();
+        sectionPostsVO.setPostDataVOList(postList);
+
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("section_id", sectionId);
+        sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
+
+        return Result.success(20000, sectionPostsVO);
     }
 
     private boolean isSubSectionLegal(Long sectionId, String name) {
         List<SubSection> subSectionList = findSubSectionBySectionId(sectionId);
         for (SubSection subsection :
                 subSectionList) {
-            if (Objects.equals(name, subsection.getName())){
+            if (Objects.equals(name, subsection.getName())) {
                 return false;
             }
         }
@@ -241,11 +266,11 @@ public class SectionServiceImpl implements SectionService {
     @Override
     public Result createSection(Long userId, String sectionName, String image, String sectionIntro, String[] subsection) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getName,sectionName);
+        queryWrapper.eq(Section::getName, sectionName);
         queryWrapper.last("limit 1");
         Section section = sectionMapper.selectOne(queryWrapper);
-        if(section!=null){
-            return Result.fail(-1,"论坛里已有该版块",null);
+        if (section != null) {
+            return Result.fail(-1, "论坛里已有该版块", null);
         }
         Section section1 = new Section();
         section1.setName(sectionName);
@@ -253,29 +278,29 @@ public class SectionServiceImpl implements SectionService {
         section1.setDescription(sectionIntro);
         section1.setModeratorId(userId);
         sectionMapper.insert(section1);
-        for(int i=0;i<subsection.length;i++){
-            AddSubSectionDTO addSubSectionDTO = new AddSubSectionDTO(section1.getId(),subsection);
+        for (int i = 0; i < subsection.length; i++) {
+            AddSubSectionDTO addSubSectionDTO = new AddSubSectionDTO(section1.getId(), subsection);
             this.addSubSection(addSubSectionDTO);
         }
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
     }
 
     @Override
     public Result deleteSubSection(Long userId, Integer subsectionId) {
         LambdaQueryWrapper<SectionAndSubSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SectionAndSubSection::getSubsectionId,subsectionId);
+        queryWrapper.eq(SectionAndSubSection::getSubsectionId, subsectionId);
         queryWrapper.last("limit 1");
         SectionAndSubSection sectionAndSubSection = sectionAndSubSectionMapper.selectOne(queryWrapper);
 
         Section section = this.findSectionById(sectionAndSubSection.getSectionId());
-        if(!Objects.equals(userId, section.getModeratorId())){
-            return Result.fail(-1,"没有权限",null);
+        if (!Objects.equals(userId, section.getModeratorId())) {
+            return Result.fail(-1, "没有权限", null);
         }
         sectionAndSubSectionMapper.deleteById(sectionAndSubSection);
 
         SubSection subSection = this.findSubSectionById(Long.valueOf(subsectionId));
         subSectionMapper.deleteById(subSection);
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
     }
 
     @Override
@@ -285,45 +310,44 @@ public class SectionServiceImpl implements SectionService {
         String name = renameSubSectionDTO.getName();
 
         LambdaQueryWrapper<SectionAndSubSection> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SectionAndSubSection::getSubsectionId,subsectionId);
+        queryWrapper.eq(SectionAndSubSection::getSubsectionId, subsectionId);
         queryWrapper.last("limit 1");
         SectionAndSubSection sectionAndSubSection = sectionAndSubSectionMapper.selectOne(queryWrapper);
 
         LambdaQueryWrapper<Section> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Section::getId,sectionAndSubSection.getSectionId());
+        queryWrapper1.eq(Section::getId, sectionAndSubSection.getSectionId());
         queryWrapper.last("limit 1");
         Section section = sectionMapper.selectOne(queryWrapper1);
 
-        if(!Objects.equals(userId, section.getModeratorId())){
-            return Result.fail(-1,"没有权限",null);
+        if (!Objects.equals(userId, section.getModeratorId())) {
+            return Result.fail(-1, "没有权限", null);
         }
         List<SubSection> subSections = this.findSubSectionBySectionId(section.getId());
         for (SubSection sub :
                 subSections) {
-            if(name==sub.getName()){
-                return Result.fail(-1,"名字不能与该版块下其他子版块名重复",null);
+            if (name == sub.getName()) {
+                return Result.fail(-1, "名字不能与该版块下其他子版块名重复", null);
             }
         }
         LambdaQueryWrapper<SubSection> queryWrapper2 = new LambdaQueryWrapper<>();
-        queryWrapper2.eq(SubSection::getId,subsectionId);
+        queryWrapper2.eq(SubSection::getId, subsectionId);
         queryWrapper2.last("limit 1");
         SubSection subSection = subSectionMapper.selectOne(queryWrapper2);
         subSection.setName(name);
         subSectionMapper.updateById(subSection);
 
-        return Result.success(20000,"okk",null);
+        return Result.success(20000, "okk", null);
     }
 
     @Override
     public Result changeSectionAvatar(Long userId, Long sectionId, String avatar) {
         Section section = this.findSectionById(sectionId);
-        if(!Objects.equals(userId, section.getModeratorId())){
-            return Result.fail(-1,"没有权限",null);
-        }
-        else {
+        if (!Objects.equals(userId, section.getModeratorId())) {
+            return Result.fail(-1, "没有权限", null);
+        } else {
             section.setAvatar(avatar);
             sectionMapper.updateById(section);
-            return Result.success(20000,"okk",null);
+            return Result.success(20000, "okk", null);
         }
     }
 
@@ -351,7 +375,7 @@ public class SectionServiceImpl implements SectionService {
 
     private List<CollectSectionVO> copyList(List<Section> sections) {
         List<CollectSectionVO> collectSectionVOS = new ArrayList<>();
-        for (Section section:
+        for (Section section :
                 sections) {
             collectSectionVOS.add(copy(section));
 

@@ -19,13 +19,13 @@ import java.time.LocalDateTime;
 public class PostDataVO {
     private Long id;
 
-    private Integer commentCounts;
+    private Integer commentCount;
 
-    private String poster; //发帖人用户名
+    private Integer likeCount;
 
-    private LocalDateTime updateTime;  //该帖子最新回复时间，如果没有回复，则为发帖时间。
+    private String author; //发帖人用户名
+
+    private LocalDateTime time;  //该帖子最新回复时间，如果没有回复，则为发帖时间。
 
     private String title;
-
-    private String summary;
 }

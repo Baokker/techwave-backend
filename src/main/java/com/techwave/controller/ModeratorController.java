@@ -76,7 +76,7 @@ public class ModeratorController {
     }
 
     @PostMapping("edit_description")
-    public Result changeSectionIntro(@RequestHeader(value = "JK-Token") String token,@RequestBody ChangeIntroDTO changeIntroDTO){
+    public Result changeSectionIntro(@RequestHeader(value = "T-Token") String token,@RequestBody ChangeIntroDTO changeIntroDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -96,7 +96,7 @@ public class ModeratorController {
     }
 
     @PostMapping("edit_section_name")
-    public Result editSectionName(@RequestHeader(value = "JK-Token") String token,@RequestBody SectionNameDTO sectionNameDTO){
+    public Result editSectionName(@RequestHeader(value = "T-Token") String token,@RequestBody SectionNameDTO sectionNameDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -105,7 +105,7 @@ public class ModeratorController {
         return null;
     }
 
-    @GetMapping("section/{{sectionId}}")
+    @GetMapping("section/{sectionId}")
     public Result getSectionData(@RequestHeader("T-Token") String token,@PathVariable Integer sectionId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -116,7 +116,7 @@ public class ModeratorController {
     }
 
     @GetMapping("search")
-    public Result getUserBySearch(@RequestHeader(value = "JK-Token") String token,Integer page,Integer perPage,String content){
+    public Result getUserBySearch(@RequestHeader(value = "T-Token") String token,Integer page,Integer perPage,String content){
 
         SearchUserDTO searchUserDTO = new SearchUserDTO(content,page,perPage);
 
@@ -129,7 +129,7 @@ public class ModeratorController {
     }
 
     @PostMapping("transfer_section")
-    public Result TransferSection(@RequestHeader(value = "JK-Token") String token,@RequestBody TransferSectionDTO transferSectionDTO){
+    public Result TransferSection(@RequestHeader(value = "T-Token") String token,@RequestBody TransferSectionDTO transferSectionDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -139,7 +139,7 @@ public class ModeratorController {
     }
 
     @GetMapping("post_report")
-    public Result getPostReport(@RequestHeader(value = "JK-Token") String token,Integer page,Integer perPage,Integer sectionId){
+    public Result getPostReport(@RequestHeader(value = "T-Token") String token,Integer page,Integer perPage,Integer sectionId){
 
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)sectionId,page,perPage);
 
@@ -152,7 +152,7 @@ public class ModeratorController {
     }
 
     @GetMapping("comment_report")
-    public Result getCommentReport(@RequestHeader(value = "JK-Token") String token,Integer page,Integer perPage,Integer sectionId){
+    public Result getCommentReport(@RequestHeader(value = "T-Token") String token,Integer page,Integer perPage,Integer sectionId){
 
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)sectionId,page,perPage);
 
@@ -165,7 +165,7 @@ public class ModeratorController {
     }
 
     @DeleteMapping("post_report")
-    public Result deletePostReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer reportId){
+    public Result deletePostReportData(@RequestHeader(value = "T-Token", required = false) String token, Integer reportId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
@@ -175,7 +175,7 @@ public class ModeratorController {
     }
 
     @DeleteMapping("post")
-    public Result deletePostData(@RequestHeader(value = "JK-Token", required = false) String token, Integer targetId){
+    public Result deletePostData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
@@ -185,7 +185,7 @@ public class ModeratorController {
     }
 
     @DeleteMapping("comment")
-    public Result deleteReplyData(@RequestHeader(value = "JK-Token", required = false) String token, @RequestBody DeleteCommentDTO deleteCommentDTO){
+    public Result deleteReplyData(@RequestHeader(value = "T-Token", required = false) String token, @RequestBody DeleteCommentDTO deleteCommentDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
@@ -195,7 +195,7 @@ public class ModeratorController {
     }
 
     @DeleteMapping("comment_report")
-    public Result deleteCommentReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer reportId){
+    public Result deleteCommentReportData(@RequestHeader(value = "T-Token", required = false) String token, Integer reportId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
@@ -204,20 +204,20 @@ public class ModeratorController {
         return null;
     }
 
-    @GetMapping("{{section_id}}/pinned_post")
+    @GetMapping("{section_id}/pinned_post")
     public Result getPinnedPosts(@RequestHeader("T-Token") String token,@PathVariable Integer section_id,Integer page,Integer perPage){
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
         return null;
     }
 
-    @GetMapping("{{section_id}}/highlighted_post")
+    @GetMapping("{section_id}/highlighted_post")
     public Result getHighlightedPosts(@PathVariable Integer section_id,Integer page,Integer perPage){
         SectionDataDTO sectionDataDTO = new SectionDataDTO((long)section_id,page,perPage);
         return null;
     }
 
     @PostMapping("pin_post")
-    public Result PinPost(@RequestHeader(value = "JK-Token") String token,@RequestBody Map<String, Integer> map){
+    public Result PinPost(@RequestHeader(value = "T-Token") String token,@RequestBody Map<String, Integer> map){
         Integer postId = Integer.valueOf(map.get("postId"));
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -228,7 +228,7 @@ public class ModeratorController {
     }
 
     @PostMapping("highlight_post")
-    public Result HighlightPost(@RequestHeader(value = "JK-Token") String token,@RequestBody Map<String, Integer> map){
+    public Result HighlightPost(@RequestHeader(value = "T-Token") String token,@RequestBody Map<String, Integer> map){
         Integer postId = Integer.valueOf(map.get("postId"));
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -239,7 +239,7 @@ public class ModeratorController {
     }
 
     @GetMapping("banned_user")
-    public Result getAllBannedUser(@RequestHeader(value = "JK-Token") String token,Integer section_id){
+    public Result getAllBannedUser(@RequestHeader(value = "T-Token") String token,Integer section_id){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -259,7 +259,7 @@ public class ModeratorController {
     }
 
     @DeleteMapping("ban_user")
-    public Result deleteBanUserData(@RequestHeader(value = "JK-Token", required = false) String token, @RequestBody DeleteBanUserDTO DeleteBanUserDTO){
+    public Result deleteBanUserData(@RequestHeader(value = "T-Token", required = false) String token, @RequestBody DeleteBanUserDTO DeleteBanUserDTO){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;

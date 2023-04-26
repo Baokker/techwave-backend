@@ -50,5 +50,6 @@ public class Post {
 
     private LocalDateTime updateTime;
 
+    private Integer likeCount;
 
 }

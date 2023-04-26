@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 public class PostsWithTagDTO {
     private Long sectionId;
     private Long subsectionId;
-    private Integer curPage;
-    private Integer limit;
+    private Integer page;
+    private Integer perPage;
 }

@@ -23,54 +23,54 @@ public class ThreadService {
     @Async("threadpool")
     public void updateViewCount(PostMapper postMapper, Post post) {
         Post updatePost = new Post();
-        updatePost.setViewCount(post.getViewCount()+1);
+        updatePost.setViewCount(post.getViewCount() + 1);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getId,post.getId());
-        queryWrapper.eq(Post::getViewCount,post.getViewCount());
-        postMapper.update(updatePost,queryWrapper);
+        queryWrapper.eq(Post::getId, post.getId());
+        queryWrapper.eq(Post::getViewCount, post.getViewCount());
+        postMapper.update(updatePost, queryWrapper);
     }
 
 
     @Async("threadpool")
     public void updateSectionByCollectCount(SectionMapper sectionMapper, Section section, Boolean b) {
         Section updateSection = new Section();
-        if(b){
-            updateSection.setUserCount(section.getUserCount()+1);
-        }
-        else{
-            updateSection.setUserCount(section.getUserCount()-1);
+        if (b) {
+            updateSection.setUserCount(section.getUserCount() + 1);
+        } else {
+            updateSection.setUserCount(section.getUserCount() - 1);
         }
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getId,section.getId());
-        queryWrapper.eq(Section::getUserCount,section.getUserCount());
-        sectionMapper.update(updateSection,queryWrapper);
+        queryWrapper.eq(Section::getId, section.getId());
+        queryWrapper.eq(Section::getUserCount, section.getUserCount());
+        sectionMapper.update(updateSection, queryWrapper);
     }
+
     @Async("threadpool")
     public void updateSectionByPostCount(SectionMapper sectionMapper, Section section, boolean b) {
         Section updateSection = new Section();
-        if(b){
-            updateSection.setPostCount(section.getPostCount()+1);
-        }
-        else{
-            updateSection.setPostCount(section.getPostCount()-1);
+        if (b) {
+            updateSection.setPostCount(section.getPostCount() + 1);
+        } else {
+            updateSection.setPostCount(section.getPostCount() - 1);
         }
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getId,section.getId());
-        queryWrapper.eq(Section::getPostCount,section.getPostCount());
-        sectionMapper.update(updateSection,queryWrapper);
+        queryWrapper.eq(Section::getId, section.getId());
+        queryWrapper.eq(Section::getPostCount, section.getPostCount());
+        sectionMapper.update(updateSection, queryWrapper);
     }
+
     @Async("threadpool")
     public void updatePostByCommentCount(PostMapper postMapper, Post post, boolean b) {
         Post updatePost = new Post();
-        if(b){
-            updatePost.setCommentCount(post.getCommentCount()+1);
-        }else{
-            updatePost.setCommentCount(post.getCommentCount()-1);
+        if (b) {
+            updatePost.setCommentCount(post.getCommentCount() + 1);
+        } else {
+            updatePost.setCommentCount(post.getCommentCount() - 1);
         }
-        LambdaQueryWrapper<Post> queryWrapper =new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getId,post.getId());
-        queryWrapper.eq(Post::getCommentCount,post.getCommentCount());
-        postMapper.update(updatePost,queryWrapper);
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getId, post.getId());
+        queryWrapper.eq(Post::getCommentCount, post.getCommentCount());
+        postMapper.update(updatePost, queryWrapper);
     }
 
     @Async("threadpool")

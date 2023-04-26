@@ -29,8 +29,6 @@ public interface SectionService {
 
     Result getUserSections(Long userId);
 
-
-
     Result createSection(Long userId, String sectionName, String s, String sectionIntro, String[] subsection);
 
     Result deleteSubSection(Long userId, Integer subsectionId);
@@ -42,4 +40,6 @@ public interface SectionService {
     Result addSubSection(AddSubSectionDTO addSubSectionDTO);
 
     Result changeSectionIntro(Long userId, ChangeIntroDTO changeIntroDTO);
+
+    Result getAllPostsInSection(SectionDataDTO sectionDataDTO);
 }

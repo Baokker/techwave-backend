@@ -32,4 +32,5 @@ public class PostVO {
     private String author;
     private List<CommentVO> commentVOList;
     private Boolean isBanned;
+    private Integer likeCount;
 }

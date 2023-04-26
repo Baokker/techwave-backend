@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "t_collect_section")
+@TableName(value = "t_collection_section")
 public class CollectionAndSection {
     @TableId(type = IdType.AUTO)
     private Long id;
