@@ -157,14 +157,13 @@ public class AccountController {
         return folderService.getCollectInfo(userId,folderPostDTO);
     }
 
-    @DeleteMapping("folder")
-    public Result deleteFolder(@RequestHeader("T-Token") String token,@RequestBody Map<String,String> map){
+    @DeleteMapping("folder/{folderId}")
+    public Result deleteFolder(@RequestHeader("T-Token") String token,@PathVariable Long folderId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
-        Long folderId = Long.valueOf(map.get("folderId"));
         return folderService.deleteFolder(userId,folderId);
     }
 
@@ -178,9 +177,8 @@ public class AccountController {
         return  postService.findPostsByUserIdWithPage(userId,type,curPage,limit);
     }
 
-    @DeleteMapping("post")
-    public Result deleteMyPost(@RequestHeader("T-Token") String token,@RequestBody Map<String,Long> map){
-        Long postId = map.get("postId");
+    @DeleteMapping("post/{postId}")
+    public Result deleteMyPost(@RequestHeader("T-Token") String token,@PathVariable Long postId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
