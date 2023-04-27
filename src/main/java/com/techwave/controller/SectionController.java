@@ -34,18 +34,17 @@ public class SectionController {
 
     @GetMapping("{sectionId}/info")
     public Result getSectionData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable Integer sectionId, Integer page, Integer perPage) {
-        SectionDataDTO sectionDataDTO = new SectionDataDTO((long) sectionId, page, perPage);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return sectionService.getSectionData(null, sectionDataDTO);
+            return sectionService.getSectionData(null, (long) sectionId, page, perPage);
         }
         Long userId = Long.valueOf(userIdStr);
-        return sectionService.getSectionData(userId, sectionDataDTO);
+        return sectionService.getSectionData(userId, (long) sectionId, page, perPage);
     }
 
     @GetMapping("{subsectionId}")
-    public Result getPostsBySubsection(Integer sectionId, @PathVariable Integer subsectionId, Integer page, Integer perPage) {
-        PostsWithTagDTO postsWithTagDTO = new PostsWithTagDTO((long) sectionId, (long) subsectionId, page, perPage);
+    public Result getPostsBySubsection(@PathVariable Integer subsectionId, Integer page, Integer perPage) {
+        PostsWithTagDTO postsWithTagDTO = new PostsWithTagDTO((long) subsectionId, page, perPage);
         return sectionService.getPostsByTag(postsWithTagDTO);
     }
 
@@ -70,10 +69,10 @@ public class SectionController {
         return postService.publishPost(userId, postPublishDTO);
     }
 
-    @GetMapping("{section_id}/search")
-    public Result getPostsBySearch(@PathVariable Integer section_id, Integer page, Integer perPage, String content) {
-        SectionSearchPostDTO sectionSearchPostDTO = new SectionSearchPostDTO((long) section_id, page, perPage, content);
-        return null;
+    @GetMapping("{sectionId}/search")
+    public Result getPostsBySearch(@PathVariable Integer sectionId, Integer page, Integer perPage, String content) {
+        SectionSearchPostDTO sectionSearchPostDTO = new SectionSearchPostDTO((long) sectionId, page, perPage, content);
+        return sectionService.getPostsInSectionByContent(sectionSearchPostDTO);
     }
 
     @GetMapping("{section_id}/post")
@@ -82,16 +81,15 @@ public class SectionController {
         return sectionService.getAllPostsInSection(sectionDataDTO);
     }
 
-    @GetMapping("{section_id}/pinned_post")
-    public Result getPinnedPosts(@RequestHeader("T-Token") String token, @PathVariable Integer section_id, Integer page, Integer perPage) {
-        SectionDataDTO sectionDataDTO = new SectionDataDTO((long) section_id, page, perPage);
-        return null;
+    @GetMapping("{sectionId}/pinned_post")
+    public Result getPinnedPosts(@PathVariable Integer sectionId) {
+        return sectionService.getPinnedPosts((long) sectionId);
     }
 
-    @GetMapping("{section_id}/highlighted_post")
-    public Result getHighlightedPosts(@PathVariable Integer section_id, Integer page, Integer perPage) {
-        SectionDataDTO sectionDataDTO = new SectionDataDTO((long) section_id, page, perPage);
-        return null;
+    @GetMapping("{sectionId}/highlighted_post")
+    public Result getHighlightedPosts(@PathVariable Integer sectionId, Integer page, Integer perPage) {
+        SectionDataDTO sectionDataDTO = new SectionDataDTO((long) sectionId, page, perPage);
+        return sectionService.getHighlightedPostsInSectionWithPage(sectionDataDTO);
     }
 
     @PostMapping("follow")

@@ -12,7 +12,6 @@ import com.techwave.utils.Result;
 public interface LoginService {
     Result createTokenByAdminName(String username, String password);
     Result createTokenByAccountOrEmail(String accountOrEmail, String password);
-
     Result logout(Integer userId);
 
 }

@@ -9,10 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SectionSearchPostDTO {
-    private Long section_id;
+    private Long sectionId;
     private Integer page;
     private Integer perPage;
     private String content;
-
-
 }

@@ -66,7 +66,7 @@ public class LoginServiceImpl implements LoginService {
 
         if (user == null) {
             QueryWrapper<User> queryAccountWrapper = new QueryWrapper<>();
-            queryEmailWrapper.eq("account", accountOrEmail);
+            queryAccountWrapper.eq("account", accountOrEmail);
             user = userMapper.selectOne(queryAccountWrapper);
             if (user == null) {
                 return Result.fail(TCode.ACCOUNT_NOT_EXIST.getCode(), "用户不存在", null);
@@ -103,7 +103,7 @@ public class LoginServiceImpl implements LoginService {
         userUpdateWrapper.eq("id", userId)
                 .ne("status", TCode.LOG_OUT.getCode())
                 .set("status", TCode.LOG_OUT.getCode());
-        int res = userMapper.update(null, userUpdateWrapper);
+        userMapper.update(null, userUpdateWrapper);
         //if (res == 0) {
         //    return Result.fail(TCode.OTHER_ERROR.getCode(), "用户未找到或该用户已经登出", null);
         //} else if (res > 1) {

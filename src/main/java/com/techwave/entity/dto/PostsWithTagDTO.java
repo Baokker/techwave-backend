@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostsWithTagDTO {
-    private Long sectionId;
     private Long subsectionId;
     private Integer page;
     private Integer perPage;

@@ -8,7 +8,7 @@ import com.techwave.utils.Result;
 import java.util.List;
 
 public interface SectionService {
-    Result getSectionData(Long userId, SectionDataDTO sectionDataDTO);
+    Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage);
 
     Section findSectionById(Long sectionId);
     SubSection findSubSectionById(Long subsectionId);
@@ -42,4 +42,10 @@ public interface SectionService {
     Result changeSectionIntro(Long userId, ChangeIntroDTO changeIntroDTO);
 
     Result getAllPostsInSection(SectionDataDTO sectionDataDTO);
+
+    Result getPostsInSectionByContent(SectionSearchPostDTO sectionSearchPostDTO);
+
+    Result getPinnedPosts(Long sectionId);
+
+    Result getHighlightedPostsInSectionWithPage(SectionDataDTO sectionDataDTO);
 }

@@ -10,7 +10,8 @@ import java.util.List;
 
 public interface PostService {
     List<PostDataVO> findPostBySectionIdWithPage(Long sectionId, int curPage, int limit);
-    List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId,Long subsectionId,int curPage,int limit);
+
+    List<PostDataVO> findPostBySectionIdAndSubSectionId(Long subsectionId, int curPage, int limit);
 
 
     Result getPostData(Long userId, PostDataDTO postDataDTO);
@@ -30,4 +31,10 @@ public interface PostService {
     Result deleteMyPost(Long postId, Long userId);
 
     List<Long> findPostIdsByUserId(Long userId);
+
+    List<PostDataVO> findPostBySectionIdWithPageAndContent(Long sectionId, Integer page, Integer perPage, String content);
+
+    List<PostDataVO> findPinnedPostsBySectionId(Long sectionId);
+
+    List<PostDataVO> findHighlightedPostBySectionIdWithPage(Long sectionId, Integer page, Integer perPage);
 }

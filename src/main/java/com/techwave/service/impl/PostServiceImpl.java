@@ -3,15 +3,14 @@ package com.techwave.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.techwave.entity.*;
+import com.techwave.entity.dto.PostDataDTO;
 import com.techwave.entity.dto.PostPublishDTO;
 import com.techwave.entity.vo.*;
-import com.techwave.service.*;
-import com.techwave.utils.TCode;
-import com.techwave.utils.Result;
-import com.techwave.entity.dto.PostDataDTO;
 import com.techwave.mapper.PostAndBodyMapper;
 import com.techwave.mapper.PostMapper;
-import org.springframework.beans.BeanUtils;
+import com.techwave.service.*;
+import com.techwave.utils.Result;
+import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,20 +50,17 @@ public class PostServiceImpl implements PostService {
         queryWrapper.eq(Post::getSectionId, sectionId);
         queryWrapper.eq(Post::getIsDeleted, false);
         Page<Post> postPage = postMapper.selectPage(page, queryWrapper);
-        List<PostDataVO> postDataVOList = copyList(postPage.getRecords());
-        return postDataVOList;
+        return copyList(postPage.getRecords());
     }
 
     @Override
-    public List<PostDataVO> findPostBySectionIdAndSubSectionId(Long sectionId, Long subsectionId, int curPage, int perPage) {
+    public List<PostDataVO> findPostBySectionIdAndSubSectionId(Long subsectionId, int curPage, int perPage) {
         Page<Post> page = new Page<>(curPage, perPage);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getSectionId, sectionId);
         queryWrapper.in(Post::getSubsectionId, subsectionId);
         queryWrapper.eq(Post::getIsDeleted, false);
         Page<Post> postPage = postMapper.selectPage(page, queryWrapper);
-        List<PostDataVO> postDataVOList = copyList(postPage.getRecords());
-        return postDataVOList;
+        return copyList(postPage.getRecords());
     }
 
 
@@ -234,6 +230,43 @@ public class PostServiceImpl implements PostService {
         return postIds;
     }
 
+    @Override
+    public List<PostDataVO> findPostBySectionIdWithPageAndContent(Long sectionId, Integer page, Integer perPage, String content) {
+        Page<Post> postPage = new Page<>(page, perPage);
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getSectionId, sectionId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        if (content != null && !content.equals("")){
+            queryWrapper.like(Post::getTitle, content);
+        }
+
+        Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
+        return copyList(postPage1.getRecords());
+    }
+
+    @Override
+    public List<PostDataVO> findPinnedPostsBySectionId(Long sectionId) {
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getSectionId, sectionId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        queryWrapper.eq(Post::getIsPinned, true);
+        List<Post> postList = postMapper.selectList(queryWrapper);
+
+        return copyList(postList);
+    }
+
+    @Override
+    public List<PostDataVO> findHighlightedPostBySectionIdWithPage(Long sectionId, Integer page, Integer perPage) {
+        Page<Post> postPage = new Page<>(page, perPage);
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getSectionId, sectionId);
+        queryWrapper.eq(Post::getIsDeleted, false);
+        queryWrapper.eq(Post::getIsHighlighted, true);
+
+        Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
+        return copyList(postPage1.getRecords());
+    }
+
     private List<MyPostContentVO> copyToMyPosts(List<Post> postList) {
         List<MyPostContentVO> myPostContentVOS = new ArrayList<>();
         for (Post post :
@@ -258,8 +291,7 @@ public class PostServiceImpl implements PostService {
         queryWrapper.eq(Post::getId, postId);
         queryWrapper.eq(Post::getIsDeleted, false);
         queryWrapper.last("limit 1");
-        Post post = postMapper.selectOne(queryWrapper);
-        return post;
+        return postMapper.selectOne(queryWrapper);
     }
 
     @Override
@@ -302,10 +334,12 @@ public class PostServiceImpl implements PostService {
 
     private PostDataVO copy(Post post) {
         PostDataVO postDataVO = new PostDataVO();
-        BeanUtils.copyProperties(post, postDataVO);
         postDataVO.setAuthor(userService.findUserById(post.getAuthorId()).getUsername());
+        postDataVO.setId(post.getId());
+        postDataVO.setLikeCount(post.getLikeCount());
+        postDataVO.setCommentCount(post.getCommentCount());
         postDataVO.setTime(post.getUpdateTime());
-
+        postDataVO.setTitle(post.getTitle());
         return postDataVO;
     }
 

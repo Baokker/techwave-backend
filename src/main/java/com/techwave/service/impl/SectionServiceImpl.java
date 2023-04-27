@@ -44,12 +44,8 @@ public class SectionServiceImpl implements SectionService {
     private PostMapper postMapper;
 
     @Override
-    public Result getSectionData(Long userId, SectionDataDTO sectionDataDTO) {
-        Long sectionId = sectionDataDTO.getSectionId();
-        Integer page = sectionDataDTO.getPage();
-        Integer perPage = sectionDataDTO.getPerPage();
-
-        if (sectionId == null || page == null || perPage == null)
+    public Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) {
+        if (sectionId == null)
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
 
         Section section = this.findSectionById(sectionId);
@@ -68,7 +64,7 @@ public class SectionServiceImpl implements SectionService {
         }
         sectionDataVO.setSummary(section.getDescription());
         sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
-        sectionDataVO.setPostVOList(postService.findPostBySectionIdWithPage(sectionId,page,perPage));
+        sectionDataVO.setPostVOList(postService.findPostBySectionIdWithPage(sectionId, page, perPage));
         return Result.success(20000, "okk", sectionDataVO);
     }
 
@@ -90,19 +86,14 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     public Result getPostsByTag(PostsWithTagDTO postsWithTagDTO) {
-        Long sectionId = postsWithTagDTO.getSectionId();
         Long subsectionId = postsWithTagDTO.getSubsectionId();
         Integer page = postsWithTagDTO.getPage();
         Integer perPage = postsWithTagDTO.getPerPage();
 
-        if (sectionId == null || subsectionId == null || page == null || perPage == null)
+        if (subsectionId == null || page == null || perPage == null)
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
-        Section section = this.findSectionById(sectionId);
-        if (section == null) {
-            return Result.fail(-1, "该版块不存在，参数有误", null);
-        }
 
-        List<PostDataVO> postList = postService.findPostBySectionIdAndSubSectionId(sectionId, subsectionId, page, perPage);
+        List<PostDataVO> postList = postService.findPostBySectionIdAndSubSectionId(subsectionId, page, perPage);
 
         SectionPostsVO sectionPostsVO = new SectionPostsVO();
         sectionPostsVO.setPostDataVOList(postList);
@@ -116,8 +107,7 @@ public class SectionServiceImpl implements SectionService {
 
     @Override
     public List<SubSection> findSubSectionBySectionId(Long sectionId) {
-        List<SubSection> subSectionList = subSectionMapper.findSubSectionBySectionId(sectionId);
-        return subSectionList;
+        return subSectionMapper.findSubSectionBySectionId(sectionId);
     }
 
     @Override
@@ -237,7 +227,7 @@ public class SectionServiceImpl implements SectionService {
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
         Section section = this.findSectionById(sectionId);
         if (section == null) {
-            return Result.fail(-1, "该版块不存在，参数有误", null);
+            return Result.fail(-1, "参数有误", null);
         }
 
         List<PostDataVO> postList = postService.findPostBySectionIdWithPage(sectionId, page, perPage);
@@ -247,6 +237,85 @@ public class SectionServiceImpl implements SectionService {
 
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("section_id", sectionId);
+        sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
+
+        return Result.success(20000, sectionPostsVO);
+    }
+
+    @Override
+    public Result getPostsInSectionByContent(SectionSearchPostDTO sectionSearchPostDTO) {
+        Long sectionId = sectionSearchPostDTO.getSectionId();
+        Integer page = sectionSearchPostDTO.getPage();
+        Integer perPage = sectionSearchPostDTO.getPerPage();
+        String content = sectionSearchPostDTO.getContent();
+
+        if (sectionId == null || page == null || perPage == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
+        Section section = this.findSectionById(sectionId);
+        if (section == null) {
+            return Result.fail(-1, "参数有误", null);
+        }
+
+        List<PostDataVO> postList = postService.findPostBySectionIdWithPageAndContent(sectionId, page, perPage, content);
+
+        SectionPostsVO sectionPostsVO = new SectionPostsVO();
+        sectionPostsVO.setPostDataVOList(postList);
+
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("section_id", sectionId);
+        if (content != null && !content.equals("")) {
+            queryWrapper.like("title", content);
+        }
+
+        sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
+
+        return Result.success(20000, sectionPostsVO);
+    }
+
+    @Override
+    public Result getPinnedPosts(Long sectionId) {
+        if (sectionId == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
+        Section section = this.findSectionById(sectionId);
+        if (section == null) {
+            return Result.fail(-1, "参数有误", null);
+        }
+
+        List<PostDataVO> postList = postService.findPinnedPostsBySectionId(sectionId);
+
+        SectionPostsVO sectionPostsVO = new SectionPostsVO();
+        sectionPostsVO.setPostDataVOList(postList);
+
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("section_id", sectionId);
+        queryWrapper.eq("is_pinned", 1);
+
+        sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
+
+        return Result.success(20000, sectionPostsVO);
+    }
+
+    @Override
+    public Result getHighlightedPostsInSectionWithPage(SectionDataDTO sectionDataDTO) {
+        Long sectionId = sectionDataDTO.getSectionId();
+        Integer page = sectionDataDTO.getPage();
+        Integer perPage = sectionDataDTO.getPerPage();
+
+        if (sectionId == null || page == null || perPage == null)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
+        Section section = this.findSectionById(sectionId);
+        if (section == null) {
+            return Result.fail(-1, "参数有误", null);
+        }
+
+        List<PostDataVO> postList = postService.findHighlightedPostBySectionIdWithPage(sectionId, page, perPage);
+
+        SectionPostsVO sectionPostsVO = new SectionPostsVO();
+        sectionPostsVO.setPostDataVOList(postList);
+
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("section_id", sectionId);
+        queryWrapper.eq("is_highlighted", 1);
         sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
 
         return Result.success(20000, sectionPostsVO);
@@ -325,7 +394,7 @@ public class SectionServiceImpl implements SectionService {
         List<SubSection> subSections = this.findSubSectionBySectionId(section.getId());
         for (SubSection sub :
                 subSections) {
-            if (name == sub.getName()) {
+            if (Objects.equals(name, sub.getName())) {
                 return Result.fail(-1, "名字不能与该版块下其他子版块名重复", null);
             }
         }
