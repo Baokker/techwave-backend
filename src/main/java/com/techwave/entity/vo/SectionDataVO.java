@@ -29,4 +29,6 @@ public class SectionDataVO {
     private String summary;
 
     private List<SubSection> subSectionList;
+
+    private List<PostDataVO> postVOList;
 }

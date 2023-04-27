@@ -68,7 +68,7 @@ public class SectionServiceImpl implements SectionService {
         }
         sectionDataVO.setSummary(section.getDescription());
         sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
-
+        sectionDataVO.setPostVOList(postService.findPostBySectionIdWithPage(sectionId,page,perPage));
         return Result.success(20000, "okk", sectionDataVO);
     }
 
