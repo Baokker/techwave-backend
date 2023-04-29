@@ -6,6 +6,8 @@ import com.techwave.entity.*;
 import com.techwave.entity.dto.PostDataDTO;
 import com.techwave.entity.dto.PostPublishDTO;
 import com.techwave.entity.vo.*;
+import com.techwave.mapper.LikeMapper;
+import com.techwave.mapper.NotificationMapper;
 import com.techwave.mapper.PostAndBodyMapper;
 import com.techwave.mapper.PostMapper;
 import com.techwave.service.*;
@@ -14,6 +16,7 @@ import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +44,12 @@ public class PostServiceImpl implements PostService {
     private SectionService sectionService;
     @Autowired
     private CommentService commentService;
-
+    @Autowired
+    private LikeMapper likeMapper;
+    @Autowired
+    private NotificationMapper notificationMapper;
+    @Autowired
+    private BanService banService;
 
     @Override
     public List<PostDataVO> findPostBySectionIdWithPage(Long sectionId, int curPage, int limit) {
@@ -65,12 +73,13 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public Result getPostData(Long userId, PostDataDTO postDataDTO) {
+    public Result getPostData(Long userId, PostDataDTO postDataDTO) throws ParseException {
         Long postId = postDataDTO.getId();
         Integer pageNo = postDataDTO.getPage();
         Integer pageSize = postDataDTO.getPerPage();
+        Boolean isOnlyHost = postDataDTO.getIsOnlyHost();
 
-        if (postId == null || pageNo == null || pageSize == null) {
+        if (postId == null || pageNo == null || pageSize == null || isOnlyHost == null) {
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
         }
 
@@ -106,6 +115,7 @@ public class PostServiceImpl implements PostService {
         postVO.setAvatar(user.getAvatar());
         postVO.setBrowseNumber(post.getViewCount());
         postVO.setLikeCount(post.getLikeCount());
+        postVO.setIsBanned(banService.getUserIsBannedInSection(post1.getAuthorId(), section.getId()));
 
         if (post.getSubsectionId() == null) {
             postVO.setSubsectionId(null);
@@ -121,11 +131,11 @@ public class PostServiceImpl implements PostService {
         }
 
         postVO.setTotal(post.getCommentCount() + 1);
-        postVO.setCommentVOList(commentService.findCommentVOsByPostIdWithPage(userId, postId, pageNo, pageSize)); //userId是发送请求的用户的id
+        postVO.setCommentVOList(commentService.findCommentVOsByPostIdWithPage(userId, postId, pageNo, pageSize, isOnlyHost, post1.getAuthorId())); //userId是发送请求的用户的id
 
         threadService.updateViewCount(postMapper, post); //通过线程池更新阅读数
 
-        return Result.success(20000, postVO);
+        return Result.success(20000, "获取帖子数据成功", postVO);
     }
 
     private String findBodyByPostId(Long postId) {
@@ -265,6 +275,52 @@ public class PostServiceImpl implements PostService {
 
         Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
         return copyList(postPage1.getRecords());
+    }
+
+    @Override
+    public Result likeOrUnlikePost(Long userId, Long postId) {
+        LambdaQueryWrapper<Like> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Like::getUserId, userId);
+        queryWrapper.eq(Like::getPostId, postId);
+        Like like = likeMapper.selectOne(queryWrapper);
+        if (like == null) {
+            like = new Like();
+            like.setUserId(userId);
+            like.setPostId(postId);
+            likeMapper.insert(like);
+
+            Notification notification = new Notification();
+            notification.setSenderId(userId);
+            notification.setUserId(postMapper.selectById(postId).getAuthorId());
+            notification.setNotificationType("like");
+            notification.setContent("用户" + userService.findUserById(userId).getUsername() + "点赞了你的帖子《" + postMapper.selectById(postId).getTitle() + "》");
+            notification.setIsRead(false);
+            notification.setLink("/post/" + postId);
+
+            notificationMapper.insert(notification);
+
+            Post post = postMapper.selectById(postId);
+            post.setLikeCount(post.getLikeCount() + 1);
+            postMapper.updateById(post);
+
+            return Result.success(20000, "like successfully", null);
+        } else {
+            likeMapper.deleteById(like.getId());
+
+            LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Notification::getSenderId, userId);
+            queryWrapper1.eq(Notification::getUserId, postMapper.selectById(postId).getAuthorId());
+            queryWrapper1.eq(Notification::getNotificationType, "like");
+            queryWrapper1.eq(Notification::getLink, "/post/" + postId);
+
+            notificationMapper.delete(queryWrapper1);
+
+            Post post = postMapper.selectById(postId);
+            post.setLikeCount(post.getLikeCount() - 1);
+            postMapper.updateById(post);
+
+            return Result.success(20000, "unlike successfully", null);
+        }
     }
 
     private List<MyPostContentVO> copyToMyPosts(List<Post> postList) {

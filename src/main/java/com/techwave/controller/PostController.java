@@ -1,19 +1,19 @@
 package com.techwave.controller;
 
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.techwave.entity.dto.*;
+import com.techwave.service.*;
 import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.OssService;
 import com.techwave.utils.Result;
-import com.techwave.service.CollectService;
-import com.techwave.service.CommentService;
-import com.techwave.service.PostService;
 
-import com.techwave.service.ReplyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,10 +37,15 @@ public class PostController {
     private ReplyService replyService;
     @Autowired
     private CollectService collectService;
+    @Autowired
+    private ReportService reportService;
+    @Autowired
+    private FollowService followService;
 
     @GetMapping("{postId}")
-    public Result getPostData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable String postId, @RequestParam Integer page, @RequestParam Integer perPage) {
-        PostDataDTO postDataDTO = new PostDataDTO(Long.valueOf(postId), page, perPage);
+    public Result getPostData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable String postId, @RequestParam Integer page, @RequestParam Integer perPage, @RequestParam Integer isOnlyHost) throws ParseException {
+        Boolean isOnlyHostBoolean = isOnlyHost == 1;
+        PostDataDTO postDataDTO = new PostDataDTO(Long.valueOf(postId), page, perPage, isOnlyHostBoolean);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return postService.getPostData(null, postDataDTO);
@@ -117,36 +122,40 @@ public class PostController {
     }
 
     @PostMapping("report")
-    public Result report(@RequestHeader("T-Token") String token, @RequestBody ReportDTO reportDTO) {
+    public Result report(@RequestHeader("T-Token") String token, @RequestBody ModeratorReportDTO moderatorReportDTO) {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
-        return null;
+        return reportService.createModeratorReport(moderatorReportDTO, userId);
     }
 
     @PostMapping("like")
-    public Result likePost(@RequestHeader("T-Token") String token, @RequestBody String postId) {
+    public Result likePost(@RequestHeader("T-Token") String token, @RequestBody JSONObject jsonObject)  throws JSONException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
-        return null;
+        Long postId = jsonObject.getLong("postId");
+
+        return postService.likeOrUnlikePost(userId, postId);
     }
 
     @PostMapping("follow_user")
-    public Result followUser(@RequestHeader("T-Token") String token, @RequestBody String targetId) {
+    public Result followUser(@RequestHeader("T-Token") String token, @RequestBody JSONObject jsonObject)  throws JSONException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
 
-        return null;
+        Long followingId = jsonObject.getLong("followingId");
+
+        return followService.followOrUnfollow(userId, followingId);
     }
 
     @PostMapping("upload_picture")

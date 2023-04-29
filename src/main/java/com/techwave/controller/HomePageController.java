@@ -24,32 +24,32 @@ public class HomePageController {
     private PostService postService;
 
     @GetMapping("collect")
-    public Result collectSection(@RequestHeader("T-Token") String token){
+    public Result collectSection(@RequestHeader("T-Token") String token, @RequestParam Integer page, @RequestParam Integer perPage) {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
-        Integer userId = Integer.parseInt(userIdStr);
-        return sectionService.collectSection(userId);
+        Long userId = Long.parseLong(userIdStr);
+        return sectionService.collectSection(userId, page, perPage);
     }
 
     @GetMapping("section")
-    public Result hotSection(){
-        return sectionService.hotSection(5);
+    public Result hotSection(@RequestParam Integer page, @RequestParam Integer perPage) {
+        return sectionService.hotSection(page, perPage);
     }
 
     @GetMapping("search")
-    public Result searchSection(String searchContent){
-        return sectionService.searchSection(searchContent);
+    public Result searchSection(@RequestParam Integer page, @RequestParam Integer perPage, @RequestParam String content) {
+        return sectionService.searchSection(page, perPage, content);
     }
 
     @GetMapping("post")
-    public Result hotPost(){
+    public Result hotPost() {
         return postService.hotPost();
     }
 
     @GetMapping("news")
-    public Result getNews(){
+    public Result getNews() {
         return postService.getNews();
     }
 }

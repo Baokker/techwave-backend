@@ -100,6 +100,6 @@ public class SectionController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return collectService.collectSection(userId, sectionId);
     }
 }

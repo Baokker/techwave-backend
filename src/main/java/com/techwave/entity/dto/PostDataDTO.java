@@ -18,4 +18,5 @@ public class PostDataDTO {
     private Long Id;
     private Integer page;
     private Integer perPage;
+    private Boolean isOnlyHost;
 }

@@ -17,11 +17,11 @@ public interface SectionService {
 
     List<SubSection> findSubSectionBySectionId(Long sectionId);
 
-    Result collectSection(Integer userId);
+    Result collectSection(Long userId, Integer page, Integer perPage);
 
-    Result hotSection(Integer i);
+    Result hotSection(Integer page, Integer perPage);
 
-    Result searchSection(String content);
+    Result searchSection(Integer page, Integer perPage, String content);
 
     void updateSectionByCollectCount(Long sectionId, boolean b);
 

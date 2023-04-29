@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface CommentService {
 
-    List<CommentVO> findCommentVOsByPostIdWithPage(Long usrId, Long postId, Integer offset, Integer limit);
+    List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId);
 
     Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO);
 

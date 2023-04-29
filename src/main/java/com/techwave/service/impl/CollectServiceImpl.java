@@ -68,7 +68,7 @@ public class CollectServiceImpl implements CollectService {
             this.collectAndSectionMapper.delete(queryWrapper);
 
             sectionService.updateSectionByCollectCount(sectionId, false);
-            return Result.success(TCode.SUCCESS.getCode(), "已取消收藏", null);
+            return Result.success(TCode.SUCCESS.getCode(), "已取消关注版块", null);
         } else {
             CollectionAndSection collectionAndSection = new CollectionAndSection();
             collectionAndSection.setSectionId(sectionId);
@@ -76,7 +76,7 @@ public class CollectServiceImpl implements CollectService {
             this.collectAndSectionMapper.insert(collectionAndSection);
 
             sectionService.updateSectionByCollectCount(sectionId, true);
-            return Result.success(20000, "收藏成功", null);
+            return Result.success(20000, "关注版块成功", null);
         }
     }
 

@@ -16,11 +16,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @TableName(value = "t_notification")
 public class Notification {
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long userId;
 
-    private Long sendId;
+    private Long senderId;
 
     private String notificationType;
 
@@ -31,6 +32,4 @@ public class Notification {
     private Boolean isRead;
 
     private String createdAt;
-
-
 }

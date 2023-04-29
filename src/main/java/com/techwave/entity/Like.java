@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName(value = "t_follow")
+@TableName(value = "t_like")
 public class Like {
     @TableId(type = IdType.AUTO)
     private Long id;

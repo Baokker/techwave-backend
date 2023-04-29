@@ -6,6 +6,7 @@ import com.techwave.entity.vo.PostDataVO;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.PostDataDTO;
 
+import java.text.ParseException;
 import java.util.List;
 
 public interface PostService {
@@ -14,7 +15,7 @@ public interface PostService {
     List<PostDataVO> findPostBySectionIdAndSubSectionId(Long subsectionId, int curPage, int limit);
 
 
-    Result getPostData(Long userId, PostDataDTO postDataDTO);
+    Result getPostData(Long userId, PostDataDTO postDataDTO) throws ParseException;
 
     Result hotPost();
 
@@ -37,4 +38,6 @@ public interface PostService {
     List<PostDataVO> findPinnedPostsBySectionId(Long sectionId);
 
     List<PostDataVO> findHighlightedPostBySectionIdWithPage(Long sectionId, Integer page, Integer perPage);
+
+    Result likeOrUnlikePost(Long userId, Long postId);
 }

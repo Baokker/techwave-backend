@@ -15,8 +15,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @TableName(value = "t_follow")
 public class Follow {
-    @TableId(type = IdType.AUTO)
     private Long followerId;
     private Long followingId;
+    @TableId(type = IdType.AUTO)
+    private Long id;
 }
 

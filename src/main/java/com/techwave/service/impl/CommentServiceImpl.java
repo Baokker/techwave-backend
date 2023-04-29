@@ -49,10 +49,13 @@ public class CommentServiceImpl implements CommentService {
     private ReplyService replyService;
 
     @Override
-    public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit) {
+    public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
         Page<Comment> commentPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getPostId, postId);
+        if (isOnlyHost) {
+            queryWrapper.eq(Comment::getAuthorId, authorId);
+        }
         Page<Comment> commentPage1 = commentMapper.selectPage(commentPage, queryWrapper);
         List<Comment> records = commentPage1.getRecords();
         List<CommentVO> commentVOList = this.copyList(records, userId);

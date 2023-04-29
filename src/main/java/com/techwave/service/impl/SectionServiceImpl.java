@@ -111,15 +111,21 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public Result collectSection(Integer userId) {
+    public Result collectSection(Long userId, Integer page, Integer perPage) {
+        LambdaQueryWrapper<CollectionAndSection> countWrapper = new LambdaQueryWrapper<>();
+        countWrapper.eq(CollectionAndSection::getUserId, userId);
+        Integer total = Math.toIntExact(collectAndSectionMapper.selectCount(countWrapper));
+
+        if (total == 0) {
+            List<ForumSectionVO> forumSectionVOS = new ArrayList<>();
+            return Result.fail(20000, "okk", forumSectionVOS);
+        }
+
         LambdaQueryWrapper<CollectionAndSection> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CollectionAndSection::getUserId, userId);
-        List<CollectionAndSection> collectionAndSections = collectAndSectionMapper.selectList(queryWrapper);
+        queryWrapper.last("limit " + (page - 1) * perPage + "," + perPage);
 
-        if (collectionAndSections.size() == 0) {
-            List<CollectSectionVO> collectSectionVOS = new ArrayList<>();
-            return Result.fail(20000, "okk", collectSectionVOS);
-        }
+        List<CollectionAndSection> collectionAndSections = collectAndSectionMapper.selectList(queryWrapper);
 
         List<Long> sectionIdList = new ArrayList<>();
         for (CollectionAndSection collectionAndSection :
@@ -131,26 +137,41 @@ public class SectionServiceImpl implements SectionService {
         queryWrapper1.in(Section::getId, sectionIdList);
         List<Section> sections = sectionMapper.selectList(queryWrapper1);
 
-        return Result.success(20000, "okk", copyList(sections));
+        return Result.success(20000, "okk", new ForumSectionDTO(total, copyList(sections)));
     }
 
     @Override
-    public Result hotSection(Integer i) {
+    public Result hotSection(Integer page, Integer perPage) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Section::getPostCount);
-        queryWrapper.last("limit " + i);
+        queryWrapper.last("limit " + (page - 1) * perPage + "," + perPage);
+
         List<Section> sections = sectionMapper.selectList(queryWrapper);
 
-        return Result.success(20000, "okk", copyList(sections));
+        LambdaQueryWrapper<Section> countWrapper = new LambdaQueryWrapper<>();
+        Integer total = Math.toIntExact(sectionMapper.selectCount(countWrapper));
+
+        return Result.success(20000, "okk", new ForumSectionDTO(total, copyList(sections)));
     }
 
     @Override
-    public Result searchSection(String content) {
+    public Result searchSection(Integer page, Integer perPage, String content) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.orderByDesc(Section::getPostCount);
-        queryWrapper.like(Section::getName, content);
+        if (content != null && !content.equals("")) {
+            queryWrapper.like(Section::getName, content);
+        }
+        queryWrapper.last("limit " + (page - 1) * perPage + "," + perPage);
+
         List<Section> sections = sectionMapper.selectList(queryWrapper);
-        return Result.success(20000, "okk", copyList(sections));
+
+        LambdaQueryWrapper<Section> countWrapper = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            countWrapper.like(Section::getName, content);
+        }
+        Integer total = Math.toIntExact(sectionMapper.selectCount(countWrapper));
+
+        return Result.success(20000, "okk", new ForumSectionDTO(total, copyList(sections)));
     }
 
     @Override
@@ -442,22 +463,23 @@ public class SectionServiceImpl implements SectionService {
         return mySectionsVO;
     }
 
-    private List<CollectSectionVO> copyList(List<Section> sections) {
-        List<CollectSectionVO> collectSectionVOS = new ArrayList<>();
+    private List<ForumSectionVO> copyList(List<Section> sections) {
+        List<ForumSectionVO> forumSectionVOS = new ArrayList<>();
         for (Section section :
                 sections) {
-            collectSectionVOS.add(copy(section));
+            forumSectionVOS.add(copy(section));
 
         }
-        return collectSectionVOS;
+        return forumSectionVOS;
     }
 
-    private CollectSectionVO copy(Section section) {
-        CollectSectionVO collectSectionVO = new CollectSectionVO();
-        collectSectionVO.setSectionId(section.getId());
-        collectSectionVO.setName(section.getName());
-        collectSectionVO.setSummary(section.getDescription());
-        collectSectionVO.setAvatar(section.getAvatar());
-        return collectSectionVO;
+    private ForumSectionVO copy(Section section) {
+        ForumSectionVO forumSectionVO = new ForumSectionVO();
+        forumSectionVO.setSectionId(section.getId());
+        forumSectionVO.setName(section.getName());
+        forumSectionVO.setSummary(section.getDescription());
+        forumSectionVO.setAvatar(section.getAvatar());
+        forumSectionVO.setFollowerCount(section.getUserCount());
+        return forumSectionVO;
     }
 }

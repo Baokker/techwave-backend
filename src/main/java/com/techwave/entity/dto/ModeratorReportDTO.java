@@ -12,9 +12,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportDTO {
+public class ModeratorReportDTO {
     private String reportReason;
     private String reportSubtype;
     private String reportType;
+    private Long sectionId;
+    private Long reportedId;
 }
 

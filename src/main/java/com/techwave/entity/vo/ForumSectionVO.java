@@ -12,9 +12,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CollectSectionVO {
+public class ForumSectionVO {
     private Long sectionId;
     private String name;
     private String avatar;
     private String summary;
+    private Integer followerCount;
 }

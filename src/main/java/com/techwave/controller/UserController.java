@@ -46,9 +46,10 @@ public class UserController {
         return registerService.register(username, password, email, account);
     }
 
-    @GetMapping("/send_email_code")
-    public Result sendEmailCode(@RequestParam(value = "email") String email) {
-        RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
+    @PostMapping("/send_email_code")
+    public Result sendEmailCode(@RequestBody JSONObject jsonObject) {
+        // RedisUtils redisUtils = new RedisUtils(stringRedisTemplate);
+        String email = jsonObject.getString("email");
         if (email == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "邮箱为空", null);
         }

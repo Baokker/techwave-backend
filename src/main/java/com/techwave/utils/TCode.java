@@ -28,7 +28,9 @@ public enum TCode {
 
     // 存储到redis缓存时，对key加入统一前缀
     EMAIL_CODE_PREFIX(70, "email-"),
-    TEL_CODE_PREFIX(80, "tel-");
+    TEL_CODE_PREFIX(80, "tel-"),
+
+    FAIL(30000, "请求失败");
 
     private Integer code;
     private String msg;

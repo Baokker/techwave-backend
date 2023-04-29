@@ -37,7 +37,7 @@ public class EmailServiceImpl implements EmailService {
 
     private String generateVerifyCode() {
         char[] verifyCodeArr = new char[6];
-        for (int i = 0; i < verifyCodeArr.length; i ++ ) {
+        for (int i = 0; i < verifyCodeArr.length; i++) {
             verifyCodeArr[i] = CODE_NUMBER.charAt(RANDOM.nextInt(CODE_NUMBER.length()));
         }
         return new String(verifyCodeArr);
@@ -49,10 +49,10 @@ public class EmailServiceImpl implements EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         String verifyCode = generateVerifyCode();
 
-        message.setSubject("JK-Space-济客空间论坛验证码");	//设置邮件标题
+        message.setSubject("TechWave论坛验证码");    //设置邮件标题
         message.setText("尊敬的用户，您好：\n"
                 + "\n本次请求的邮件验证码为：" + verifyCode + "，本验证码5分钟内有效，请及时输入。（请勿泄露此验证码）\n"
-                + "\n如非本人操作，请忽略该邮件。\n(这是一封自动发送的邮件，请不要直接回复）");	//设置邮件正文
+                + "\n如非本人操作，请忽略该邮件。\n(这是一封自动发送的邮件，请不要直接回复）");    //设置邮件正文
         message.setTo(receiver);
         message.setFrom(sender);
         mailSender.send(message);
