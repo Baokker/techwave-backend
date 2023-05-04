@@ -98,8 +98,10 @@ public class PostServiceImpl implements PostService {
         postVO.setTitle(post.getTitle());
         if (userId != null) {
             postVO.setIsCollected(collectService.isUserCollectPost(userId, postId));
+            postVO.setIsLiked(likeMapper.selectIsUserLikePost(userId, postId));
         } else {
             postVO.setIsCollected(false);
+            postVO.setIsLiked(false);
         }
 
         postVO.setSectionId(post.getSectionId());

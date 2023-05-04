@@ -33,4 +33,5 @@ public class PostVO {
     private List<CommentVO> commentVOList;
     private Boolean isBanned;
     private Integer likeCount;
+    private Boolean isLiked;
 }
