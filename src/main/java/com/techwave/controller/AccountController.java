@@ -41,10 +41,6 @@ public class AccountController {
     @Autowired
     private  FolderService folderService;
     @Autowired
-    private ReplyService replyService;
-    @Autowired
-    private CommentService commentService;
-    @Autowired
     private ThreadService threadService;
     @Autowired
     private UserMapper userMapper;
@@ -68,14 +64,10 @@ public class AccountController {
         Long userId = Long.parseLong(userIdStr);
         return userInfoService.getUserInformation(userId);
     }
-    @GetMapping("{target_id}/card")
-    public Result getUserCard(@RequestHeader("T-Token") String token, @PathVariable String target_id){
-        String userIdStr = JwtUtil.getUserIdFromToken(token);
-        if (userIdStr == null) {
-            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
-        }
-        Long userId = Long.valueOf(userIdStr);
-        return null;
+    @GetMapping("{targetId}/card")
+    public Result getUserCard(@PathVariable String targetId){
+        Long targetIdLong = Long.parseLong(targetId);
+        return userInfoService.getUserCardInfo(targetIdLong);
     }
     @PostMapping("change_avatar")
     public Result changeAvatar(@RequestHeader("T-Token") String token,@RequestParam("Avatar") MultipartFile avatar){

@@ -14,4 +14,11 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
+    void addFollowCount(Long followerId);
+
+    void addFanCount(Long followingId);
+
+    void subFollowCount(Long followerId);
+
+    void subFanCount(Long followingId);
 }

@@ -7,7 +7,9 @@ package com.techwave.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.techwave.entity.Follow;
 import com.techwave.mapper.FollowMapper;
+import com.techwave.mapper.UserMapper;
 import com.techwave.service.FollowService;
+import com.techwave.service.UserService;
 import com.techwave.utils.Result;
 import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class FollowServiceImpl implements FollowService {
     @Autowired
     private FollowMapper followMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public Result followOrUnfollow(Long followerId, Long followingId) {
@@ -35,9 +39,13 @@ public class FollowServiceImpl implements FollowService {
             follow.setFollowerId(followerId);
             follow.setFollowingId(followingId);
             followMapper.insert(follow);
+            userMapper.addFollowCount(followerId);
+            userMapper.addFanCount(followingId);
             return Result.success(TCode.SUCCESS.getCode(), "关注成功", null);
         } else {
             followMapper.deleteById(follow.getId());
+            userMapper.subFollowCount(followerId);
+            userMapper.subFanCount(followingId);
             return Result.success(TCode.SUCCESS.getCode(), "取消关注成功", null);
         }
     }

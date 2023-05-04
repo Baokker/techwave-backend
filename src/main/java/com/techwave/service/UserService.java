@@ -32,4 +32,5 @@ public interface UserService {
 
     Result editPassword(Long userId, PasswordDTO passwordDTO);
 
+    Result getUserCardInfo(Long userId);
 }

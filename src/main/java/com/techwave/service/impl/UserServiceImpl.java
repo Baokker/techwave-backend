@@ -10,6 +10,7 @@ import com.techwave.entity.User;
 import com.techwave.entity.dto.EditEmailDTO;
 import com.techwave.entity.dto.PasswordDTO;
 import com.techwave.entity.dto.UserInfoDTO;
+import com.techwave.entity.vo.UserCardVO;
 import com.techwave.entity.vo.UserDataVO;
 import com.techwave.entity.vo.UserVO;
 import com.techwave.mapper.AdminMapper;
@@ -261,6 +262,14 @@ public class UserServiceImpl implements UserService {
             map.put("result", false);
             return Result.fail(-1, "密码错误或新密码与旧密码重复", map);
         }
+    }
+
+    @Override
+    public Result getUserCardInfo(Long userId) {
+        User user = this.findUserById(userId);
+        UserCardVO userCardVO = new UserCardVO();
+        BeanUtils.copyProperties(user, userCardVO);
+        return Result.success(20000, "okk", userCardVO);
     }
 
 }
