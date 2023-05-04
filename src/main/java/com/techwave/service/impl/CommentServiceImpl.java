@@ -159,12 +159,13 @@ public class CommentServiceImpl implements CommentService {
         CommentVO commentVO = new CommentVO();
         User user = userService.findUserById(comment.getAuthorId());
         commentVO.setCommentId(comment.getId());
-        commentVO.setAuthor(user.getUsername());
+        commentVO.setAuthorName(user.getUsername());
+        commentVO.setAuthorId(user.getId());
         commentVO.setAvatar(user.getAvatar());
         commentVO.setTime(comment.getCreatedAt());
         commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
-        List<ReplyVO> replyVOList = new ArrayList<>();
+        List<ReplyVO> replyVOList;
         replyVOList = replyService.findRepliesByCommentId(comment.getId(), userId);
         commentVO.setReplyVOList(replyVOList);
         return commentVO;

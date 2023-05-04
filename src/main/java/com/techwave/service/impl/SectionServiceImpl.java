@@ -55,12 +55,12 @@ public class SectionServiceImpl implements SectionService {
         SectionDataVO sectionDataVO = new SectionDataVO();
         sectionDataVO.setName(section.getName());
         sectionDataVO.setAvatar(section.getAvatar());
-        sectionDataVO.setFollowCount(section.getUserCount());
+        sectionDataVO.setCollectCount(section.getUserCount());
 
         if (userId != null) {
-            sectionDataVO.setIsFollowed(collectService.isUserCollectSection(userId, sectionId));
+            sectionDataVO.setIsCollected(collectService.isUserCollectSection(userId, sectionId));
         } else {
-            sectionDataVO.setIsFollowed(false);
+            sectionDataVO.setIsCollected(false);
         }
         sectionDataVO.setSummary(section.getDescription());
         sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));

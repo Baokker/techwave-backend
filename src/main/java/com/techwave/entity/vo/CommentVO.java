@@ -19,7 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 public class CommentVO {
     private Long commentId;
-    private String author;
+    private Long authorId;
+    private String authorName;
     private String avatar;
     private LocalDateTime time;
     private String content;

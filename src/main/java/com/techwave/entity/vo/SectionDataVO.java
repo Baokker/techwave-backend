@@ -22,9 +22,9 @@ public class SectionDataVO {
 
     private String avatar;
 
-    private Integer followCount;
+    private Integer collectCount;
 
-    private Boolean isFollowed;
+    private Boolean isCollected;
 
     private String summary;
 
