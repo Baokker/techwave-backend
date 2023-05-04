@@ -17,5 +17,5 @@ public class ForumSectionVO {
     private String name;
     private String avatar;
     private String summary;
-    private Integer followerCount;
+    private Integer collectCount;
 }

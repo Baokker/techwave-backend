@@ -479,7 +479,7 @@ public class SectionServiceImpl implements SectionService {
         forumSectionVO.setName(section.getName());
         forumSectionVO.setSummary(section.getDescription());
         forumSectionVO.setAvatar(section.getAvatar());
-        forumSectionVO.setFollowerCount(section.getUserCount());
+        forumSectionVO.setCollectCount(section.getUserCount());
         return forumSectionVO;
     }
 }
