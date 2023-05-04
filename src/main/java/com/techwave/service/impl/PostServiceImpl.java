@@ -179,7 +179,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void updatePostByCommentCount(Long postId, boolean b) {
         Post post = this.findPostById(postId);
-        threadService.updatePostByCommentCount(postMapper, post, true);
+        threadService.updatePostByCommentCount(postMapper, post, b);
     }
 
     @Override
