@@ -289,6 +289,7 @@ public class PostServiceImpl implements PostService {
             like = new Like();
             like.setUserId(userId);
             like.setPostId(postId);
+            like.setAuthorId(postMapper.selectById(postId).getAuthorId());
             likeMapper.insert(like);
 
             Notification notification = new Notification();
