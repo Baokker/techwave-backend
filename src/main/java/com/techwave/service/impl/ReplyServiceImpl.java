@@ -23,6 +23,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -143,7 +144,9 @@ public class ReplyServiceImpl implements ReplyService {
         LambdaQueryWrapper<Comment> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Comment::getId, reply.getCommentId());
         myReplyVO.setPostId(commentMapper.selectOne(queryWrapper2).getPostId());
-        myReplyVO.setTime(reply.getCreatedAt());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 自定义时间格式
+        String filteredDateTime = reply.getCreatedAt().format(formatter); // 格式化时间
+        myReplyVO.setTime(filteredDateTime);
         myReplyVO.setId(reply.getId());
         myReplyVO.setType("回复了我的评论");
         Document doc = Jsoup.parse(reply.getContent());

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -149,7 +150,9 @@ public class CommentServiceImpl implements CommentService {
         myReplyVO.setAvatar(userMapper.selectOne(queryWrapper).getAvatar());
         myReplyVO.setId(comment.getId());
         myReplyVO.setPostId(comment.getPostId());
-        myReplyVO.setTime(comment.getCreatedAt());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 自定义时间格式
+        String filteredDateTime = comment.getCreatedAt().format(formatter); // 格式化时间
+        myReplyVO.setTime(filteredDateTime);
         myReplyVO.setType("回复了我的帖子");
         Document doc = Jsoup.parse(this.findContentByBodyId(comment.getBodyId()));
         String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
@@ -173,7 +176,7 @@ public class CommentServiceImpl implements CommentService {
         commentVO.setAuthorName(user.getUsername());
         commentVO.setAuthorId(user.getId());
         commentVO.setAvatar(user.getAvatar());
-        commentVO.setTime(comment.getCreatedAt());
+        commentVO.setTime(String.valueOf(comment.getCreatedAt()));
         commentVO.setContent(this.findContentByBodyId(comment.getBodyId()));
         commentVO.setAbleToDelete(Objects.equals(comment.getAuthorId(), userId));
         List<ReplyVO> replyVOList;

@@ -21,5 +21,5 @@ public class MyReplyVO {
     private String avatar;
     private String type;
     private String content;
-    private LocalDateTime time;
+    private String time;
 }
