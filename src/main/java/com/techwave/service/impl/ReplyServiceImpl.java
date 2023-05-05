@@ -1,12 +1,14 @@
 package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.techwave.entity.Comment;
 import com.techwave.entity.CommentAndReply;
 import com.techwave.entity.Reply;
 import com.techwave.entity.User;
 import com.techwave.entity.dto.ReplyOnCommentDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
+import com.techwave.mapper.CommentMapper;
 import com.techwave.mapper.UserMapper;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnReplyDTO;
@@ -41,6 +43,9 @@ public class ReplyServiceImpl implements ReplyService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private CommentMapper commentMapper;
     @Override
     public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) {
         Long commentId = replyOnCommentDTO.getCommentId();
@@ -130,11 +135,14 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     private MyReplyVO copyMyReply(Reply reply) {
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, reply.getAuthorId());
+        LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(User::getId, reply.getAuthorId());
         MyReplyVO myReplyVO = new MyReplyVO();
-        myReplyVO.setName(userMapper.selectOne(queryWrapper).getUsername());
-        myReplyVO.setAvatar(userMapper.selectOne(queryWrapper).getAvatar());
+        myReplyVO.setName(userMapper.selectOne(queryWrapper1).getUsername());
+        myReplyVO.setAvatar(userMapper.selectOne(queryWrapper1).getAvatar());
+        LambdaQueryWrapper<Comment> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Comment::getId, reply.getCommentId());
+        myReplyVO.setPostId(commentMapper.selectOne(queryWrapper2).getPostId());
         myReplyVO.setTime(reply.getCreatedAt());
         myReplyVO.setId(reply.getId());
         myReplyVO.setType("回复了我的评论");

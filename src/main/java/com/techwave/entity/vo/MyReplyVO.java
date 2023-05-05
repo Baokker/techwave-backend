@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class MyReplyVO {
     private Long id;
+    private Long postId;
     private String name;
     private String avatar;
     private String type;

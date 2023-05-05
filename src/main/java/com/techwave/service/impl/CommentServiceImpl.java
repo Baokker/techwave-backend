@@ -148,6 +148,7 @@ public class CommentServiceImpl implements CommentService {
         myReplyVO.setName(userMapper.selectOne(queryWrapper).getUsername());
         myReplyVO.setAvatar(userMapper.selectOne(queryWrapper).getAvatar());
         myReplyVO.setId(comment.getId());
+        myReplyVO.setPostId(comment.getPostId());
         myReplyVO.setTime(comment.getCreatedAt());
         myReplyVO.setType("回复了我的帖子");
         Document doc = Jsoup.parse(this.findContentByBodyId(comment.getBodyId()));
