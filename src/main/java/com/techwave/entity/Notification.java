@@ -27,6 +27,8 @@ public class Notification {
 
     private String content;
 
+    private String title;
+
     private String link;
 
     private Boolean isRead;

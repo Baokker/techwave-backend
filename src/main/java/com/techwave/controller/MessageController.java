@@ -116,7 +116,7 @@ public class MessageController {
     }
 
     @GetMapping("like")
-    public Result getLikeData(@RequestHeader(value = "JK-Token", required = false) String token){
+    public Result getLikeData(@RequestHeader("T-Token") String token,Integer page,Integer perPage){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
