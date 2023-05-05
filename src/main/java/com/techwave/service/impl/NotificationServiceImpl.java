@@ -41,15 +41,15 @@ public class NotificationServiceImpl implements NotificationService {
         Page<Notification> notificationPage1 = notificationMapper.selectPage(notificationPage, queryWrapper);
         List<Notification> notificationList = notificationPage1.getRecords();
         //筛选未读数
-        LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Notification::getNotificationType, type);
-        queryWrapper1.eq(Notification::getUserId, userId);
-        queryWrapper1.eq(Notification::getIsRead, 0);
+//        LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
+//        queryWrapper1.eq(Notification::getNotificationType, type);
+//        queryWrapper1.eq(Notification::getUserId, userId);
+//        queryWrapper1.eq(Notification::getIsRead, 0);
         MyNotificationVO myNotificationVO = new MyNotificationVO();
-        Integer count = Math.toIntExact(notificationMapper.selectCount(queryWrapper1));
-        myNotificationVO.setTotal(count);
+//        Integer count = Math.toIntExact(notificationMapper.selectCount(queryWrapper1));
+        myNotificationVO.setTotal(notificationList.size());
         MyLikeVO myLikeVO = new MyLikeVO();
-        myLikeVO.setTotal(count);
+        myLikeVO.setTotal(notificationList.size());
 
         if(Objects.equals(type, "system")){
             myNotificationVO.setMyNotifications(copyToMyNotifications(notificationList));
