@@ -15,8 +15,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MyReplyVO {
-    private String type;
     private Long id;
+    private String name;
+    private String avatar;
+    private String type;
     private String content;
     private LocalDateTime time;
 }

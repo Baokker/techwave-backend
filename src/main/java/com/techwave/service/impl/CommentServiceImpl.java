@@ -9,6 +9,7 @@ import com.techwave.entity.User;
 import com.techwave.entity.vo.CommentVO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
+import com.techwave.mapper.UserMapper;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnPostDTO;
 import com.techwave.mapper.CommentAndBodyMapper;
@@ -18,6 +19,9 @@ import com.techwave.service.CommentService;
 import com.techwave.service.PostService;
 import com.techwave.service.ReplyService;
 import com.techwave.service.UserService;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +51,8 @@ public class CommentServiceImpl implements CommentService {
     private PostAndCommentMapper postAndCommentMapper;
     @Autowired
     private ReplyService replyService;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
@@ -118,14 +124,12 @@ public class CommentServiceImpl implements CommentService {
     public List<MyReplyVO> findCommentsByUserId(Long userId) {
         List<Long> postIds = postService.findPostIdsByUserId(userId);
         if (postIds.size() == 0) {
-            List<MyReplyVO> myReplyVOList = new ArrayList<>();
-            return myReplyVOList;
+            return new ArrayList<>();
         }
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(Comment::getPostId, postIds);
         List<Comment> commentList = commentMapper.selectList(queryWrapper);
-        List<MyReplyVO> myReplyVOList = copyMyComments(commentList);
-        return myReplyVOList;
+        return copyMyComments(commentList);
     }
 
     private List<MyReplyVO> copyMyComments(List<Comment> commentList) {
@@ -138,11 +142,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private MyReplyVO copyMyComment(Comment comment) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, comment.getAuthorId());
         MyReplyVO myReplyVO = new MyReplyVO();
+        myReplyVO.setName(userMapper.selectOne(queryWrapper).getUsername());
+        myReplyVO.setAvatar(userMapper.selectOne(queryWrapper).getAvatar());
         myReplyVO.setId(comment.getId());
         myReplyVO.setTime(comment.getCreatedAt());
-        myReplyVO.setType("Comment");
-        myReplyVO.setContent(this.findContentByBodyId(comment.getBodyId()));
+        myReplyVO.setType("回复了我的帖子");
+        Document doc = Jsoup.parse(this.findContentByBodyId(comment.getBodyId()));
+        String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
+        myReplyVO.setContent(text);
         return myReplyVO;
     }
 
@@ -175,7 +185,6 @@ public class CommentServiceImpl implements CommentService {
         LambdaQueryWrapper<CommentAndBody> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CommentAndBody::getId, bodyId);
         queryWrapper.last("limit 1");
-        String content = commentAndBodyMapper.selectOne(queryWrapper).getContent();
-        return content;
+        return commentAndBodyMapper.selectOne(queryWrapper).getContent();
     }
 }

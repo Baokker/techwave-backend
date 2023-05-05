@@ -32,7 +32,7 @@ public class MessageController {
     private NotificationService notificationService;
 
     @GetMapping("reply")
-    public Result getReply(@RequestHeader("T-Token") String token,Integer offset,Integer limit){
+    public Result getReply(@RequestHeader("T-Token") String token,Integer page,Integer perPage){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -46,8 +46,8 @@ public class MessageController {
         myReplyVOList1.sort((t1,t2)->t2.getTime().compareTo(t1.getTime()));
 
         Set<MyReplyVO> collect = myReplyVOList1.stream()
-                .skip((offset - 1) * limit)
-                .limit(limit)
+                .skip((long) (page - 1) * perPage)
+                .limit(perPage)
                 .collect(Collectors.toSet());
         HashMap<String,Object> map = new HashMap<>();
         map.put("total",collect.size());

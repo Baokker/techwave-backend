@@ -3,9 +3,11 @@ package com.techwave.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.techwave.entity.CommentAndReply;
 import com.techwave.entity.Reply;
+import com.techwave.entity.User;
 import com.techwave.entity.dto.ReplyOnCommentDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
+import com.techwave.mapper.UserMapper;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnReplyDTO;
 import com.techwave.mapper.CommentAndReplyMapper;
@@ -14,6 +16,9 @@ import com.techwave.service.ReplyService;
 import com.techwave.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +39,8 @@ public class ReplyServiceImpl implements ReplyService {
     @Autowired
     private CommentAndReplyMapper commentAndReplyMapper;
 
+    @Autowired
+    private UserMapper userMapper;
     @Override
     public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) {
         Long commentId = replyOnCommentDTO.getCommentId();
@@ -102,8 +109,7 @@ public class ReplyServiceImpl implements ReplyService {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Reply::getCommentId, id);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
-        List<ReplyVO> replyVOList = copyReplies(replies, userId);
-        return replyVOList;
+        return copyReplies(replies, userId);
     }
 
     @Override
@@ -111,8 +117,7 @@ public class ReplyServiceImpl implements ReplyService {
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Reply::getToId, userId);
         List<Reply> replies = replyMapper.selectList(queryWrapper);
-        List<MyReplyVO> myReplyVOList = copyMyReplies(replies);
-        return myReplyVOList;
+        return copyMyReplies(replies);
     }
 
     private List<MyReplyVO> copyMyReplies(List<Reply> replies) {
@@ -125,11 +130,17 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     private MyReplyVO copyMyReply(Reply reply) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, reply.getAuthorId());
         MyReplyVO myReplyVO = new MyReplyVO();
+        myReplyVO.setName(userMapper.selectOne(queryWrapper).getUsername());
+        myReplyVO.setAvatar(userMapper.selectOne(queryWrapper).getAvatar());
         myReplyVO.setTime(reply.getCreatedAt());
         myReplyVO.setId(reply.getId());
-        myReplyVO.setType("Reply");
-        myReplyVO.setContent(reply.getContent());
+        myReplyVO.setType("回复了我的评论");
+        Document doc = Jsoup.parse(reply.getContent());
+        String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
+        myReplyVO.setContent(text);
         return myReplyVO;
     }
 
