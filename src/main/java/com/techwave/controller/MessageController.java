@@ -1,9 +1,11 @@
 package com.techwave.controller;
 
 
+import com.techwave.entity.Notification;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.service.CommentService;
+import com.techwave.service.NotificationService;
 import com.techwave.service.ReplyService;
 import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
@@ -25,6 +27,9 @@ public class MessageController {
     private ReplyService replyService;
     @Autowired
     private CommentService commentService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("reply")
     public Result getReply(@RequestHeader("T-Token") String token,Integer offset,Integer limit){
@@ -122,17 +127,17 @@ public class MessageController {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return notificationService.findNotificationsByTypeWithPage(userId,"like",page,perPage);
     }
 
     @GetMapping("notification")
-    public Result getNotificationData(@RequestHeader(value = "JK-Token", required = false) String token){
+    public Result getNotificationData(@RequestHeader("T-Token") String token,Integer page,Integer perPage){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return notificationService.findNotificationsByTypeWithPage(userId,"system",page,perPage);
     }
 
 }
