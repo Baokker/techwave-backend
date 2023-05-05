@@ -367,8 +367,9 @@ public class PostServiceImpl implements PostService {
     public Result getNews() {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         //queryWrapper.eq(Post::getSectionId, 1);
-        queryWrapper.eq(Post::getIsHighlighted, true);
+        //queryWrapper.eq(Post::getIsHighlighted, true);
         queryWrapper.eq(Post::getIsDeleted, false);
+        queryWrapper.like(Post::getTitle, "新闻");
         queryWrapper.orderByDesc(Post::getCommentCount);
         queryWrapper.last("limit 10");
         List<Post> postList = postMapper.selectList(queryWrapper);
