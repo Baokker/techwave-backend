@@ -14,4 +14,6 @@ public interface FollowService {
      * @return
      */
     Result followOrUnfollow(Long followerId, Long followingId);
+
+    Result isFollow(Long myUserId, Long userId);
 }

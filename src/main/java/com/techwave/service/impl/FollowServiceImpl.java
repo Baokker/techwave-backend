@@ -15,6 +15,8 @@ import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * @descriptions: 关注
  * @author: baokker
@@ -30,6 +32,9 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public Result followOrUnfollow(Long followerId, Long followingId) {
+        if (Objects.equals(followerId, followingId)) {
+            return Result.success(TCode.FAIL.getCode(), "不能关注自己", false);
+        }
         LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Follow::getFollowerId, followerId)
                 .eq(Follow::getFollowingId, followingId);
@@ -47,6 +52,19 @@ public class FollowServiceImpl implements FollowService {
             userMapper.subFollowCount(followerId);
             userMapper.subFanCount(followingId);
             return Result.success(TCode.SUCCESS.getCode(), "取消关注成功", null);
+        }
+    }
+
+    @Override
+    public Result isFollow(Long myUserId, Long userId) {
+        LambdaQueryWrapper<Follow> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Follow::getFollowerId, myUserId)
+                .eq(Follow::getFollowingId, userId);
+        Follow follow = followMapper.selectOne(queryWrapper);
+        if (follow == null) {
+            return Result.success(TCode.SUCCESS.getCode(), "未关注", false);
+        } else {
+            return Result.success(TCode.SUCCESS.getCode(), "已关注", true);
         }
     }
 }

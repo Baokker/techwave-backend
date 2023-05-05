@@ -158,6 +158,17 @@ public class PostController {
         return followService.followOrUnfollow(userId, followingId);
     }
 
+    @GetMapping("is_follow/{userId}")
+    public Result isFollow(@RequestHeader("T-Token") String token, @PathVariable Long userId) {
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到userId为空", null);
+        }
+        Long myUserId = Long.parseLong(userIdStr);
+
+        return followService.isFollow(myUserId, userId);
+    }
+
     @PostMapping("upload_picture")
     public Result uploadPicture(@RequestHeader("T-Token") String token, @RequestParam("image") MultipartFile picture) {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
