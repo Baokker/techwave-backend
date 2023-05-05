@@ -114,6 +114,7 @@ public class PostServiceImpl implements PostService {
         Post post1 = this.findPostById(postId);
         User user = userService.findUserById(post1.getAuthorId());
         postVO.setAuthor(user.getUsername());
+        postVO.setAuthorId(user.getId());
         postVO.setAvatar(user.getAvatar());
         postVO.setBrowseNumber(post.getViewCount());
         postVO.setLikeCount(post.getLikeCount());
