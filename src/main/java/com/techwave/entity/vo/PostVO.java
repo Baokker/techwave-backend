@@ -30,6 +30,7 @@ public class PostVO {
     private LocalDateTime time;
     private String content;
     private String author;
+    private Long authorId;
     private List<CommentVO> commentVOList;
     private Boolean isBanned;
     private Integer likeCount;
