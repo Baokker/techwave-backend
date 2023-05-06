@@ -41,8 +41,8 @@ public class MessageController {
 
         List<MyReplyVO> myReplyVOList1 = replyService.findRepliesByUserId(userId);
         List<MyReplyVO> myReplyVOList2 = commentService.findCommentsByUserId(userId);
-
         myReplyVOList1.addAll(myReplyVOList2);
+
         myReplyVOList1.sort((t1,t2)->t2.getTime().compareTo(t1.getTime()));
 
         Set<MyReplyVO> collect = myReplyVOList1.stream()
@@ -55,6 +55,16 @@ public class MessageController {
         return Result.success(20000,"okk",map);
     }
 
+    @GetMapping("count")
+    //统计未读数
+    public Result getCountData(@RequestHeader(value = "JK-Token", required = false) String token){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return null;
+        }
+        Long userId = Long.valueOf(userIdStr);
+        return null;
+    }
 
     @GetMapping("list")
     public Result getListData(@RequestHeader(value = "JK-Token", required = false) String token){

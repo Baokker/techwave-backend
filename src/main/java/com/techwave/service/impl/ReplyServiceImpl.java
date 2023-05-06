@@ -143,7 +143,11 @@ public class ReplyServiceImpl implements ReplyService {
         myReplyVO.setAvatar(userMapper.selectOne(queryWrapper1).getAvatar());
         LambdaQueryWrapper<Comment> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Comment::getId, reply.getCommentId());
-        myReplyVO.setPostId(commentMapper.selectOne(queryWrapper2).getPostId());
+        Comment temp = commentMapper.selectOne(queryWrapper2);
+        if(temp == null)
+            myReplyVO.setPostId(0L);
+        else
+            myReplyVO.setPostId(temp.getPostId());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 自定义时间格式
         String filteredDateTime = reply.getCreatedAt().format(formatter); // 格式化时间
         myReplyVO.setTime(filteredDateTime);

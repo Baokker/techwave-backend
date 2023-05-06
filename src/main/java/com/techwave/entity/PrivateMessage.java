@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName(value = "t_private_message")
-public class PrivateAndMessage {
+public class PrivateMessage {
     private Long id;
 
     private  Long sendId;

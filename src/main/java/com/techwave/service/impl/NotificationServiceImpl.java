@@ -61,6 +61,14 @@ public class NotificationServiceImpl implements NotificationService {
         return Result.fail();
     }
 
+    @Override
+    public Result countNotRead(Long userId) {
+        LambdaQueryWrapper<Notification> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Notification::getIsRead, false);
+        queryWrapper.eq(Notification::getUserId, userId);
+        return null;
+    }
+
     private List<MyNotificationContentVO> copyToMyNotifications(List<Notification> notificationList) {
         List<MyNotificationContentVO> myNotificationContentVOS = new ArrayList<>();
         for (Notification notification :
