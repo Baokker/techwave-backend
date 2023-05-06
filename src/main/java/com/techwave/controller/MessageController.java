@@ -1,7 +1,5 @@
 package com.techwave.controller;
 
-
-import com.techwave.entity.Notification;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.service.CommentService;
@@ -49,6 +47,7 @@ public class MessageController {
                 .skip((long) (page - 1) * perPage)
                 .limit(perPage)
                 .collect(Collectors.toSet());
+
         HashMap<String,Object> map = new HashMap<>();
         map.put("total",collect.size());
         map.put("myReply",collect);

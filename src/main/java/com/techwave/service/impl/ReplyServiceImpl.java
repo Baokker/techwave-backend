@@ -1,26 +1,19 @@
 package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.techwave.entity.Comment;
-import com.techwave.entity.CommentAndReply;
-import com.techwave.entity.Reply;
-import com.techwave.entity.User;
+import com.techwave.entity.*;
 import com.techwave.entity.dto.ReplyOnCommentDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
-import com.techwave.mapper.CommentMapper;
-import com.techwave.mapper.UserMapper;
+import com.techwave.mapper.*;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnReplyDTO;
-import com.techwave.mapper.CommentAndReplyMapper;
-import com.techwave.mapper.ReplyMapper;
 import com.techwave.service.ReplyService;
 import com.techwave.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -41,12 +34,15 @@ public class ReplyServiceImpl implements ReplyService {
     private ReplyMapper replyMapper;
     @Autowired
     private CommentAndReplyMapper commentAndReplyMapper;
-
     @Autowired
     private UserMapper userMapper;
-
     @Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private NotificationMapper notificationMapper;
+    @Autowired
+    private CommentAndBodyMapper commentAndBodyMapper;
+
     @Override
     public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) {
         Long commentId = replyOnCommentDTO.getCommentId();
@@ -63,6 +59,23 @@ public class ReplyServiceImpl implements ReplyService {
         commentAndReply.setReplyId(reply.getId());
         commentAndReply.setCommentId(commentId);
         commentAndReplyMapper.insert(commentAndReply);
+
+        if (!Objects.equals(userId, userService.findUserIdByCommentId(commentId))) {
+            Notification notification = new Notification();
+            notification.setSenderId(userId);
+            notification.setUserId(userService.findUserIdByCommentId(commentId));
+            notification.setTitle(userService.findUserById(userId).getUsername() + "回复了你的评论:" + commentAndBodyMapper.selectById(commentId).getContent());
+            notification.setLink("/post/" + commentMapper.selectById(commentId).getPostId());
+            notification.setNotificationType("reply");
+
+            Document doc = Jsoup.parse(replyOnCommentDTO.getContent());
+            String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
+            notification.setContent(text);
+
+            notification.setIsRead(false);
+
+            notificationMapper.insert(notification);
+        }
 
         return Result.success(20000, "操作成功", null);
     }
@@ -87,6 +100,33 @@ public class ReplyServiceImpl implements ReplyService {
         reply.setToId(this.findUserIdByReplyId(replyId));
         reply.setCreatedAt(LocalDateTime.now());
         replyMapper.insert(reply);
+
+        if (Objects.equals(userId, this.findUserIdByReplyId(replyId))) {
+            return Result.success(20000, "操作成功", null);
+        }
+
+        Notification notification = new Notification();
+        notification.setSenderId(userId);
+        notification.setUserId(this.findUserIdByReplyId(replyId));
+        notification.setTitle(userService.findUserById(userId).getUsername() + "回复了你的评论:" + reply1.getContent());
+
+        LambdaQueryWrapper<Comment> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Comment::getId, reply.getCommentId());
+        Comment temp = commentMapper.selectOne(queryWrapper2);
+        if (temp == null) {
+            notification.setLink("/post/0"); // 0代表评论不存在
+        } else {
+            notification.setLink("/post/" + temp.getPostId());
+        }
+
+        notification.setNotificationType("reply");
+        Document doc = Jsoup.parse(replyOnReplyDTO.getContent());
+        String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
+        notification.setContent(text);
+
+        notification.setIsRead(false);
+
+        notificationMapper.insert(notification);
 
         return Result.success(20000, "操作成功", null);
     }
@@ -144,7 +184,7 @@ public class ReplyServiceImpl implements ReplyService {
         LambdaQueryWrapper<Comment> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Comment::getId, reply.getCommentId());
         Comment temp = commentMapper.selectOne(queryWrapper2);
-        if(temp == null)
+        if (temp == null)
             myReplyVO.setPostId(0L);
         else
             myReplyVO.setPostId(temp.getPostId());

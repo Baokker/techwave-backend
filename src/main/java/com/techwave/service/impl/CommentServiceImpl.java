@@ -2,26 +2,19 @@ package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.techwave.entity.Comment;
-import com.techwave.entity.CommentAndBody;
-import com.techwave.entity.PostAndComment;
-import com.techwave.entity.User;
+import com.techwave.entity.*;
 import com.techwave.entity.vo.CommentVO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
-import com.techwave.mapper.UserMapper;
+import com.techwave.mapper.*;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnPostDTO;
-import com.techwave.mapper.CommentAndBodyMapper;
-import com.techwave.mapper.CommentMapper;
-import com.techwave.mapper.PostAndCommentMapper;
 import com.techwave.service.CommentService;
 import com.techwave.service.PostService;
 import com.techwave.service.ReplyService;
 import com.techwave.service.UserService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +47,10 @@ public class CommentServiceImpl implements CommentService {
     private ReplyService replyService;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private NotificationMapper notificationMapper;
+    @Autowired
+    private PostMapper postMapper;
 
     @Override
     public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
@@ -65,8 +62,7 @@ public class CommentServiceImpl implements CommentService {
         }
         Page<Comment> commentPage1 = commentMapper.selectPage(commentPage, queryWrapper);
         List<Comment> records = commentPage1.getRecords();
-        List<CommentVO> commentVOList = this.copyList(records, userId);
-        return commentVOList;
+        return this.copyList(records, userId);
     }
 
     @Override
@@ -96,6 +92,24 @@ public class CommentServiceImpl implements CommentService {
         postAndComment.setPostId(postId);
         postAndComment.setCommentId(comment.getId());
         postAndCommentMapper.insert(postAndComment);
+
+        if (!Objects.equals(userId, postMapper.selectById(postId).getAuthorId())) {
+            // 发送通知
+            Notification notification = new Notification();
+            notification.setSenderId(userId);
+            notification.setUserId(postMapper.selectById(postId).getAuthorId());
+            notification.setTitle(userService.findUserById(userId).getUsername() + "评论了你的帖子《" + postMapper.selectById(postId).getTitle() + "》");
+            notification.setLink("/post/" + postId);
+            notification.setNotificationType("reply");
+
+            Document doc = Jsoup.parse(replyOnPostDTO.getContent());
+            String text = doc.text().replaceAll("<.*?>", ""); // 提取纯文本并过滤 HTML 标签及其属性
+            notification.setContent(text);
+
+            notification.setIsRead(false);
+
+            notificationMapper.insert(notification);
+        }
 
         return Result.success(20000, "操作成功", null);
     }
