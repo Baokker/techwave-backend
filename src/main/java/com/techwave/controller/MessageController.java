@@ -1,5 +1,6 @@
 package com.techwave.controller;
 
+import com.techwave.entity.dto.CollectPostDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.service.CommentService;
@@ -49,24 +50,24 @@ public class MessageController {
                 .collect(Collectors.toSet());
 
         HashMap<String,Object> map = new HashMap<>();
-        map.put("total",collect.size());
+        map.put("total",myReplyVOList1.size());
         map.put("myReply",collect);
         return Result.success(20000,"okk",map);
     }
 
     @GetMapping("count")
     //统计未读数
-    public Result getCountData(@RequestHeader(value = "JK-Token", required = false) String token){
+    public Result getCountData(@RequestHeader("T-Token") String token){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return notificationService.countNotRead(userId);
     }
 
     @GetMapping("list")
-    public Result getListData(@RequestHeader(value = "JK-Token", required = false) String token){
+    public Result getListData(@RequestHeader(value = "T-Token", required = false) String token){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
@@ -76,7 +77,7 @@ public class MessageController {
     }
 
     @GetMapping("history")
-    public Result getHistoryData(@RequestHeader(value = "JK-Token", required = false) String token, Integer targetId){
+    public Result getHistoryData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
         //只有targetId就不封装了
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -87,7 +88,7 @@ public class MessageController {
     }
 
     @DeleteMapping("history")
-    public Result deleteHistoryData(@RequestHeader(value = "JK-Token", required = false) String token, Integer targetId){
+    public Result deleteHistoryData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
         //只有targetId就不封装了
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -118,6 +119,15 @@ public class MessageController {
         return null;
     }
 
+    @PostMapping("read")
+    public Result readMessage(@RequestHeader("T-Token") String token, String type) {
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+        return notificationService.readMessage(userId, type);
+    }
     @PostMapping ("report_user")
     public Result reportUser(@RequestHeader("T-Token") String token, @RequestBody Map<String, String> map){
         Long targetId = Long.valueOf(map.get("targetId"));
