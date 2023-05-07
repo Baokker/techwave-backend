@@ -120,12 +120,13 @@ public class MessageController {
     }
 
     @PostMapping("read")
-    public Result readMessage(@RequestHeader("T-Token") String token, String type) {
+    public Result readMessage(@RequestHeader("T-Token") String token,  @RequestBody Map<String, String> map) {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.parseLong(userIdStr);
+        String type = map.get("type");
         return notificationService.readMessage(userId, type);
     }
     @PostMapping ("report_user")

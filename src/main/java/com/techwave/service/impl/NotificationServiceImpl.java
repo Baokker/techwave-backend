@@ -100,7 +100,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Result readMessage(Long userId, String type) {
-        if(!Objects.equals(type, "like") && !Objects.equals(type, "system") && !Objects.equals(type, "notification") && !Objects.equals(type, "message"))
+        if(!Objects.equals(type, "like") && !Objects.equals(type, "system") && !Objects.equals(type, "reply") && !Objects.equals(type, "message"))
             return Result.fail(-1, "参数有误", null);
         LambdaUpdateWrapper<Notification> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(Notification::getIsRead, 1);
