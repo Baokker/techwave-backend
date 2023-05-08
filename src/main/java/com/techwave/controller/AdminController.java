@@ -2,6 +2,7 @@ package com.techwave.controller;
 
 import com.techwave.entity.Admin;
 import com.techwave.entity.dto.SolveDTO;
+import com.techwave.service.AdminService;
 import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private AdminService adminService;
 
     @PostMapping("login")
     public Result login(@RequestBody Admin admin) {
@@ -38,14 +41,14 @@ public class AdminController {
     }
 
     @GetMapping("section_request")
-    public Result getSectionRequestData(@RequestHeader(value = "JK-Token", required = false) String token, Integer page, Integer perPage){
+    public Result getSectionRequestData(@RequestHeader(value = "T-Token", required = false) String token, Integer page, Integer perPage){
         PageDTO pageDTO = new PageDTO(page,perPage);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return adminService.getSectionRequest(page,perPage);
     }
 
     @GetMapping("report")
@@ -66,7 +69,7 @@ public class AdminController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return adminService.dealWithSectionRequests(solveDTO);
     }
 
     @PostMapping ("ban_user")
