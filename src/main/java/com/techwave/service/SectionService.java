@@ -48,4 +48,6 @@ public interface SectionService {
     Result getPinnedPosts(Long sectionId);
 
     Result getHighlightedPostsInSectionWithPage(SectionDataDTO sectionDataDTO);
+
+    List<Long> findSectionIdsByModeratorId(Long userId);
 }

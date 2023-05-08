@@ -342,6 +342,19 @@ public class SectionServiceImpl implements SectionService {
         return Result.success(20000, sectionPostsVO);
     }
 
+    @Override
+    public List<Long> findSectionIdsByModeratorId(Long userId) {
+        LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Section::getModeratorId, userId);
+        List<Section> sectionList = sectionMapper.selectList(queryWrapper);
+        List<Long> sectionIdList = new ArrayList<>();
+        for (Section section :
+                sectionList) {
+            sectionIdList.add(section.getId());
+        }
+        return sectionIdList;
+    }
+
     private boolean isSubSectionLegal(Long sectionId, String name) {
         List<SubSection> subSectionList = findSubSectionBySectionId(sectionId);
         for (SubSection subsection :

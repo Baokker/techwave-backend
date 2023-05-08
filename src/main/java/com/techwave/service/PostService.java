@@ -40,4 +40,6 @@ public interface PostService {
     List<PostDataVO> findHighlightedPostBySectionIdWithPage(Long sectionId, Integer page, Integer perPage);
 
     Result likeOrUnlikePost(Long userId, Long postId);
+
+    Result deletePostByModerator(Long userId, Long postId);
 }

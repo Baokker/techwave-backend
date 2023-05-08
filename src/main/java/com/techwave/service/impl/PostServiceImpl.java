@@ -249,7 +249,7 @@ public class PostServiceImpl implements PostService {
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getSectionId, sectionId);
         queryWrapper.eq(Post::getIsDeleted, false);
-        if (content != null && !content.equals("")){
+        if (content != null && !content.equals("")) {
             queryWrapper.like(Post::getTitle, content);
         }
 
@@ -324,6 +324,34 @@ public class PostServiceImpl implements PostService {
             postMapper.updateById(post);
 
             return Result.success(20000, "unlike successfully", null);
+        }
+    }
+
+    @Override
+    public Result deletePostByModerator(Long userId, Long postId) {
+        User user = userService.findUserById(userId);
+        // judge if the user is the moderator of the section
+        Boolean isModeratorOfSection = false;
+        if (user.getIsModerator() != false) {
+            Long thisSectionId = postMapper.selectById(postId).getSectionId();
+            List<Long> sectionIds = sectionService.findSectionIdsByModeratorId(userId);
+            for (Long sectionId :
+                    sectionIds) {
+                if (thisSectionId.equals(sectionId)) {
+                    isModeratorOfSection = true;
+                    break;
+                }
+            }
+        }
+
+        if (isModeratorOfSection) {
+            Post post = postMapper.selectById(postId);
+            post.setIsDeleted(true);
+            postMapper.updateById(post);
+            sectionService.updateSectionByPostCount(post.getSectionId(), false);
+            return Result.success(20000, "delete successfully", null);
+        } else {
+            return Result.fail(-1, "no enough authentication", null);
         }
     }
 

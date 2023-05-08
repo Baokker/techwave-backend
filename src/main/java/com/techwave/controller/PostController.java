@@ -184,4 +184,14 @@ public class PostController {
         return Result.success(20000, "okk", map);
     }
 
+    @DeleteMapping("/{postId}")
+    public Result deletePostByModerator(@RequestHeader("T-Token") String token, @PathVariable Long postId) {
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+
+        return postService.deletePostByModerator(userId, postId);
+    }
 }
