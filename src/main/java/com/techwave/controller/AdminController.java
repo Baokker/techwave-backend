@@ -52,14 +52,14 @@ public class AdminController {
     }
 
     @GetMapping("report")
-    public Result getReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer page, Integer perPage){
+    public Result getReportData(@RequestHeader(value = "T-Token", required = false) String token, Integer page, Integer perPage){
         PageDTO pageDTO = new PageDTO(page,perPage);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return adminService.getReportList(page,perPage);
     }
 
     @PostMapping ("section_request")
@@ -78,18 +78,17 @@ public class AdminController {
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
-        Long userId = Long.valueOf(userIdStr);
-        return null;
+        return adminService.banUser(banUserDTO);
     }
 
-    @DeleteMapping("report")
-    public Result deleteReportData(@RequestHeader(value = "JK-Token", required = false) String token, Integer reportId){
+    @DeleteMapping("report/{reportId}")
+    public Result deleteReportData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable Integer reportId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return null;
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
-        Long userId = Long.valueOf(userIdStr);
-        return null;
+        System.out.println(reportId);
+        return adminService.deleteReportData(reportId);
     }
 
 
