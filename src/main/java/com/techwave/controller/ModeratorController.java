@@ -2,7 +2,11 @@ package com.techwave.controller;
 
 
 import com.techwave.entity.Section;
+import com.techwave.entity.SubSection;
 import com.techwave.entity.dto.*;
+import com.techwave.service.BanService;
+import com.techwave.service.PostService;
+import com.techwave.service.ReportService;
 import com.techwave.utils.JwtUtil;
 import com.techwave.service.SectionService;
 import com.techwave.utils.TCode;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,6 +29,15 @@ public class ModeratorController {
 
     @Autowired
     private OssService ossService;
+
+    @Autowired
+    private PostService postService;
+    @Autowired
+    private ReportService reportService;
+
+    @Autowired
+
+    private BanService banService;
 
     @PostMapping("add_subsection")
     public Result addSubSection(@RequestHeader("T-Token") String token, @RequestBody AddSubSectionDTO addSubSectionDTO){
@@ -40,7 +54,7 @@ public class ModeratorController {
         return Result.fail(-1,"该用户没有此权限",null);
     }
 
-    @DeleteMapping("delete_subsection")
+    @DeleteMapping("subsection")
     public Result deleteSubSection(@RequestHeader("T-Token") String token,@RequestBody Map<String,Integer> map){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
@@ -82,17 +96,12 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return sectionService.changeSectionIntro(userId,changeIntroDTO);
+        return sectionService.changeSectionIntro(changeIntroDTO);
     }
 
     @GetMapping("subsection")
-    public Result getSubsection(@RequestHeader("T-Token") String token,Integer sectionId){
-        String userIdStr = JwtUtil.getUserIdFromToken(token);
-        if (userIdStr == null) {
-            return null;
-        }
-        Long userId = Long.valueOf(userIdStr);
-        return null;
+    public List<SubSection> getSubsection(@RequestHeader("T-Token") String token, Long sectionId){
+        return sectionService.findSubSectionBySectionId(sectionId);
     }
 
     @PostMapping("edit_section_name")
@@ -102,17 +111,27 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return sectionService.changeSectionName(sectionNameDTO);
     }
 
     @GetMapping("section/{sectionId}")
-    public Result getSectionData(@RequestHeader("T-Token") String token,@PathVariable Integer sectionId){
+    public Result getSectionData(@RequestHeader("T-Token") String token,@PathVariable Long sectionId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
-            return null;
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return sectionService.getSectionDataById(sectionId);
+    }
+
+    @GetMapping("sectionById/{sectionId}")
+    public Result getSectionDataBySectionId(@RequestHeader("T-Token") String token,@PathVariable Long sectionId){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.valueOf(userIdStr);
+        return sectionService.getUserSectionsBySectionId(userId,sectionId);
     }
 
     @GetMapping("search")
@@ -148,7 +167,7 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return reportService.getPostReportWithPage(sectionDataDTO);
     }
 
     @GetMapping("comment_report")
@@ -161,7 +180,7 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return reportService.getCommentReportWithPage(sectionDataDTO);
     }
 
     @DeleteMapping("post_report")
@@ -171,7 +190,7 @@ public class ModeratorController {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return reportService.deleteReport(userId,reportId);
     }
 
     @DeleteMapping("post")
@@ -181,7 +200,7 @@ public class ModeratorController {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return reportService.deletePost(userId,targetId);
     }
 
     @DeleteMapping("comment")
@@ -191,7 +210,7 @@ public class ModeratorController {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return reportService.deleteComentOrReply( userId, deleteCommentDTO);
     }
 
     @DeleteMapping("comment_report")
@@ -219,12 +238,13 @@ public class ModeratorController {
     @PostMapping("pin_post")
     public Result PinPost(@RequestHeader(value = "T-Token") String token,@RequestBody Map<String, Integer> map){
         Integer postId = Integer.valueOf(map.get("postId"));
+        System.out.println(postId);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return postService.pinOrUnpinPost(userId,(long)postId);
     }
 
     @PostMapping("highlight_post")
@@ -235,18 +255,32 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return postService.highlightOrUnhighlightPost(userId,(long)postId);
     }
 
     @GetMapping("banned_user")
-    public Result getAllBannedUser(@RequestHeader(value = "T-Token") String token,Integer section_id){
+    public Result getAllBannedUser(@RequestHeader(value = "T-Token") String token,Integer sectionId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return banService.getBannedList(sectionId);
     }
+    @DeleteMapping("ban_user")
+    public Result deleteBanUserData(@RequestHeader(value = "T-Token", required = false) String token, @RequestBody DeleteBanUserDTO DeleteBanUserDTO){
+        long targetId = DeleteBanUserDTO.getTargetId();
+        long sectionId = DeleteBanUserDTO.getSectionId();
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return null;
+        }
+        System.out.println(targetId);
+        System.out.println(sectionId);
+        Long userId = Long.valueOf(userIdStr);
+        return  banService.unBanSectionUser(targetId,sectionId);
+    }
+
 
     @PostMapping ("ban_user")
     public Result BanUser(@RequestHeader("T-Token") String token, @RequestBody SectionBanUserDTO sectionBanUserDTO){
@@ -258,14 +292,5 @@ public class ModeratorController {
         return null;
     }
 
-    @DeleteMapping("ban_user")
-    public Result deleteBanUserData(@RequestHeader(value = "T-Token", required = false) String token, @RequestBody DeleteBanUserDTO DeleteBanUserDTO){
-        String userIdStr = JwtUtil.getUserIdFromToken(token);
-        if (userIdStr == null) {
-            return null;
-        }
-        Long userId = Long.valueOf(userIdStr);
-        return null;
-    }
 
 }

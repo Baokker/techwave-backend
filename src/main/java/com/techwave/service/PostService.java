@@ -17,6 +17,10 @@ public interface PostService {
 
     Result getPostData(Long userId, PostDataDTO postDataDTO) throws ParseException;
 
+    Result pinOrUnpinPost(Long userId, Long postId);
+
+    Result highlightOrUnhighlightPost(Long userId, Long postId);
+
     Result hotPost();
 
     Result getNews();

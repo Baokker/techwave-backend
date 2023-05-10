@@ -39,7 +39,7 @@ public interface SectionService {
 
     Result addSubSection(AddSubSectionDTO addSubSectionDTO);
 
-    Result changeSectionIntro(Long userId, ChangeIntroDTO changeIntroDTO);
+    Result changeSectionIntro( ChangeIntroDTO changeIntroDTO);
 
     Result getAllPostsInSection(SectionDataDTO sectionDataDTO);
 
@@ -50,4 +50,10 @@ public interface SectionService {
     Result getHighlightedPostsInSectionWithPage(SectionDataDTO sectionDataDTO);
 
     List<Long> findSectionIdsByModeratorId(Long userId);
+
+    Result getUserSectionsBySectionId(Long userId,Long sectionId);
+
+    Result changeSectionName( SectionNameDTO sectionNameDTO);
+
+    Result getSectionDataById(Long sectionId);
 }

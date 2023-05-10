@@ -53,7 +53,7 @@ public class CommentServiceImpl implements CommentService {
     private PostMapper postMapper;
 
     @Override
-    public List<CommentVO> findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
+    public List<CommentVO>  findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
         Page<Comment> commentPage = new Page<>(offset, limit);
         LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Comment::getPostId, postId);
@@ -63,6 +63,14 @@ public class CommentServiceImpl implements CommentService {
         Page<Comment> commentPage1 = commentMapper.selectPage(commentPage, queryWrapper);
         List<Comment> records = commentPage1.getRecords();
         return this.copyList(records, userId);
+    }
+
+    @Override
+    public CommentAndBody findContentById(Long commentId) {
+        LambdaQueryWrapper<CommentAndBody> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CommentAndBody::getId, commentId);
+        queryWrapper.last("limit 1");
+        return commentAndBodyMapper.selectOne(queryWrapper);
     }
 
     @Override

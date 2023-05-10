@@ -326,6 +326,75 @@ public class PostServiceImpl implements PostService {
             return Result.success(20000, "unlike successfully", null);
         }
     }
+    @Override
+    public Result pinOrUnpinPost(Long userId, Long postId) {
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getId, postId);
+        Post post = postMapper.selectOne(queryWrapper);
+        if (post.getIsPinned() == false) {
+            post.setIsPinned(true);
+            postMapper.updateById(post);
+
+            Notification notification = new Notification();
+            notification.setSenderId(userId);
+            notification.setUserId(postMapper.selectById(postId).getAuthorId());
+            notification.setNotificationType("system");
+            notification.setContent("版主置顶了你的帖子《" + postMapper.selectById(postId).getTitle() + "》");
+            notification.setIsRead(false);
+            notification.setLink("/post/" + postId);
+            return Result.success(20000, "pin successfully", null);
+
+
+        } else {
+            post.setIsPinned(false);
+            postMapper.updateById(post);
+
+            LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Notification::getSenderId, userId);
+            queryWrapper1.eq(Notification::getUserId, postMapper.selectById(postId).getAuthorId());
+            queryWrapper1.eq(Notification::getNotificationType, "system");
+            queryWrapper1.eq(Notification::getLink, "/post/" + postId);
+
+            notificationMapper.delete(queryWrapper1);
+
+            return Result.success(20000, "unpin successfully", null);
+        }
+    }
+
+    @Override
+    public Result highlightOrUnhighlightPost(Long userId, Long postId) {
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Post::getId, postId);
+        Post post = postMapper.selectOne(queryWrapper);
+        if (post.getIsHighlighted() == false) {
+            post.setIsHighlighted(true);
+            postMapper.updateById(post);
+
+            Notification notification = new Notification();
+            notification.setSenderId(userId);
+            notification.setUserId(postMapper.selectById(postId).getAuthorId());
+            notification.setNotificationType("system");
+            notification.setContent("版主将你的帖子《" + postMapper.selectById(postId).getTitle() + "》设为精华");
+            notification.setIsRead(false);
+            notification.setLink("/post/" + postId);
+            return Result.success(20000, "highli successfully", null);
+
+
+        } else {
+            post.setIsHighlighted(false);
+            postMapper.updateById(post);
+
+            LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Notification::getSenderId, userId);
+            queryWrapper1.eq(Notification::getUserId, postMapper.selectById(postId).getAuthorId());
+            queryWrapper1.eq(Notification::getNotificationType, "system");
+            queryWrapper1.eq(Notification::getLink, "/post/" + postId);
+
+            notificationMapper.delete(queryWrapper1);
+
+            return Result.success(20000, "unpin successfully", null);
+        }
+    }
 
     @Override
     public Result deletePostByModerator(Long userId, Long postId) {

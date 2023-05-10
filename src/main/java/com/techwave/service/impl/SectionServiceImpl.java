@@ -68,6 +68,18 @@ public class SectionServiceImpl implements SectionService {
         return Result.success(20000, "okk", sectionDataVO);
     }
 
+    public Result getSectionDataById(Long sectionId){
+        Section section = this.findSectionById(sectionId);
+        if (section == null) {
+            return Result.fail(-1, "该版块不存在，参数有误", null);
+        }
+        SectionDataVO sectionDataVO = new SectionDataVO();
+        sectionDataVO.setName(section.getName());
+        sectionDataVO.setAvatar(section.getAvatar());
+        sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
+
+        return Result.success(20000, "okk", sectionDataVO);
+    }
     @Override
     public Section findSectionById(Long sectionId) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
@@ -103,6 +115,26 @@ public class SectionServiceImpl implements SectionService {
         sectionPostsVO.setTotal(Math.toIntExact(postMapper.selectCount(queryWrapper)));
 
         return Result.success(20000, sectionPostsVO);
+    }
+
+    public Result getUserSectionsBySectionId(Long userId, Long sectionId) {
+        LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Section::getModeratorId, userId);
+        queryWrapper.eq(Section::getId, sectionId);
+        List<Section> sections = sectionMapper.selectList(queryWrapper);
+        List<MySectionsVO> mySectionsVOList = copyToMySectionsVO(sections);
+        Map<String, Object> map = new HashMap<>();
+        map.put("sectionInfo", mySectionsVOList);
+        return Result.success(map);
+    }
+
+    public Result changeSectionName(SectionNameDTO sectionNameDTO) {
+        Long sectionId = sectionNameDTO.getSectionId();
+        String sectionName = sectionNameDTO.getName();
+        Section section = this.findSectionById(sectionId);
+        section.setName(sectionName);
+        sectionMapper.updateById(section);
+        return Result.success(20000,"okk",null);
     }
 
     @Override
@@ -226,13 +258,10 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public Result changeSectionIntro(Long userId, ChangeIntroDTO changeIntroDTO) {
+    public Result changeSectionIntro(ChangeIntroDTO changeIntroDTO) {
         Long sectionId = changeIntroDTO.getSectionId();
-        String sectionIntro = changeIntroDTO.getSectionIntro();
+        String sectionIntro = changeIntroDTO.getDescription();
         Section section = this.findSectionById(sectionId);
-        if (!Objects.equals(userId, section.getModeratorId())) {
-            return Result.fail(-1, "没有权限", null);
-        }
         section.setDescription(sectionIntro);
         sectionMapper.updateById(section);
         return Result.success(20000, "okk", null);

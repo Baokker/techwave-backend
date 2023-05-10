@@ -17,4 +17,6 @@ public interface BanService {
     Result unBanSectionUser(Long userId, Long sectionId);
 
     Boolean getUserIsBannedInSection(Long userId, Long sectionId) throws ParseException;
+
+    Result getBannedList(Integer sectionId);
 }

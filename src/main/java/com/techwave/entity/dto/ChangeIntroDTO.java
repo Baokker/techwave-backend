@@ -14,5 +14,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChangeIntroDTO {
     private Long sectionId;
-    private String sectionIntro;
+    private String description;
 }

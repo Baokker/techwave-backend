@@ -1,5 +1,6 @@
 package com.techwave.service;
 
+import com.techwave.entity.Reply;
 import com.techwave.entity.dto.ReplyOnCommentDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
@@ -18,4 +19,6 @@ public interface ReplyService {
     List<ReplyVO> findRepliesByCommentId(Long id, Long userId);
 
     List<MyReplyVO> findRepliesByUserId(Long userId);
+
+    Reply findContentById(Long Id);
 }
