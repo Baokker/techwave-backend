@@ -125,6 +125,11 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Result createChat(Long userId, Long targetId) {
         //说明是第一次给对面发消息，给对方插入
+        LambdaQueryWrapper<ChatList> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ChatList::getUser1Id,userId);
+        queryWrapper.eq(ChatList::getUser2Id,targetId);
+        if(chatListMapper.exists(queryWrapper))
+            return Result.success(TCode.SUCCESS.getCode(), "已有该用户聊天记录", null);
         ChatList chatList = new ChatList();
         chatList.setUser1Id(userId);
         chatList.setUser2Id(targetId);
