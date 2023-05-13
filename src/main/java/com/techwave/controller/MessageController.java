@@ -1,16 +1,22 @@
 package com.techwave.controller;
 
+import com.techwave.entity.AdminAndReport;
+import com.techwave.entity.BlockList;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
+import com.techwave.mapper.AdminAndReportMapper;
+import com.techwave.mapper.BlocklistMapper;
 import com.techwave.service.CommentService;
 import com.techwave.service.MessageService;
 import com.techwave.service.NotificationService;
 import com.techwave.service.ReplyService;
+import com.techwave.utils.OssService;
 import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
 import com.techwave.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,15 +27,20 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("message/")
 public class MessageController {
-
     @Autowired
     private ReplyService replyService;
     @Autowired
     private CommentService commentService;
     @Autowired
+    private OssService ossService;
+    @Autowired
     private MessageService messageService;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private AdminAndReportMapper adminAndReportMapper;
+    @Autowired
+    private BlocklistMapper blocklistMapper;
 
     @GetMapping("reply")
     public Result getReply(@RequestHeader("T-Token") String token,Integer page,Integer perPage){
@@ -107,7 +118,14 @@ public class MessageController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        BlockList blockList = new BlockList();
+        blockList.setBlockedUserId(targetId);
+        blockList.setUserId(userId);
+        int result = blocklistMapper.insert(blockList);
+        if(result == 1)
+            return Result.success(20000,"okk");
+        else
+            return Result.fail(-1,"拉黑失败",null);
     }
 
     @PostMapping ("send_message")
@@ -142,14 +160,27 @@ public class MessageController {
         return messageService.createChat(userId, Long.valueOf(targetId));
     }
     @PostMapping ("report_user")
-    public Result reportUser(@RequestHeader("T-Token") String token, @RequestBody Map<String, String> map){
-        Long targetId = Long.valueOf(map.get("targetId"));
+    public Result reportUser(@RequestHeader("T-Token") String token, @RequestParam("reportedUserId") Integer reportedUserId,
+                             @RequestParam("reportType") String reportType, @RequestParam("reportReason") String reportReason,
+                             @RequestParam("createAt") String createAt,@RequestParam("imageList") List<MultipartFile> imageList){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        AdminAndReport adminAndReport = new AdminAndReport();
+        adminAndReport.setReportedUserId(Long.valueOf(reportedUserId));
+        adminAndReport.setUserId(userId);
+        adminAndReport.setReportReason(reportReason);
+        adminAndReport.setReportType(reportType);
+        adminAndReport.setCreatedAt(createAt);
+        adminAndReport.setImage(ossService.uploadFiles(imageList));
+        System.out.println(ossService.uploadFiles(imageList));
+        int result = adminAndReportMapper.insert(adminAndReport);
+        if(result == 1)
+            return Result.success(20000,"okk");
+        else
+            return Result.fail(-1, "新建举报失败");
     }
 
     @GetMapping("like")
