@@ -1,6 +1,5 @@
 package com.techwave.controller;
 
-import com.techwave.entity.dto.CollectPostDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.service.CommentService;
@@ -131,6 +130,16 @@ public class MessageController {
         Long userId = Long.parseLong(userIdStr);
         String type = map.get("type");
         return notificationService.readMessage(userId, type);
+    }
+    @PostMapping("create_chat")
+    public Result createChat(@RequestHeader("T-Token") String token,  @RequestBody Map<String, String> map) {
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Long userId = Long.parseLong(userIdStr);
+        String targetId = map.get("targetId");
+        return messageService.createChat(userId, Long.valueOf(targetId));
     }
     @PostMapping ("report_user")
     public Result reportUser(@RequestHeader("T-Token") String token, @RequestBody Map<String, String> map){

@@ -122,6 +122,19 @@ public class MessageServiceImpl implements MessageService {
         return Result.fail(TCode.FAIL.getCode(), "发送失败", null);
     }
 
+    @Override
+    public Result createChat(Long userId, Long targetId) {
+        //说明是第一次给对面发消息，给对方插入
+        ChatList chatList = new ChatList();
+        chatList.setUser1Id(userId);
+        chatList.setUser2Id(targetId);
+        int result = chatListMapper.insert(chatList);
+        if(result == 1)
+            return Result.success(TCode.SUCCESS.getCode(), "新建聊天成功", null);
+        else
+            return Result.fail(TCode.FAIL.getCode(), "新建聊天失败", null);
+    }
+
     private List<MyListContentVO> copyToMyLists(List<ChatList> chatListList) {
         List<MyListContentVO> myListContentVOS = new ArrayList<>();
         for (ChatList chatList :

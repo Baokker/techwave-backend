@@ -9,5 +9,6 @@ import java.text.ParseException;
 public interface MessageService {
     Result findListsById(Long userId);
     Result findHistoriesById(Long userId,Long targetId);
-     Result sendMessage(Long userId, SendMessageDTO sendMessageDTO);
+    Result sendMessage(Long userId, SendMessageDTO sendMessageDTO);
+    Result createChat(Long userId, Long targetId);
 }
