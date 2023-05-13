@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class MyListContentVO {
     private Long userId;
     private String avatar;
+    private String name;
     private Integer count;
     private String recentChat;
 }

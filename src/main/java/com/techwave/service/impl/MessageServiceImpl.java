@@ -54,7 +54,7 @@ public class MessageServiceImpl implements MessageService {
         queryWrapper2.eq(PrivateMessage::getRecipientId,targetId);
         List<PrivateMessage> messageList = privateMessageMapper.selectList(queryWrapper2);
         messageList.addAll(messageList1);
-        messageList.sort((t1,t2)->t2.getSendAt().compareTo(t1.getSendAt()));
+        messageList.sort(Comparator.comparing(PrivateMessage::getSendAt));
         HistoryVO historyVO = new HistoryVO();
         LambdaQueryWrapper<BlockList> queryWrapper3 = new LambdaQueryWrapper<>();
         queryWrapper3.eq(BlockList::getBlockedUserId, userId);
@@ -137,6 +137,7 @@ public class MessageServiceImpl implements MessageService {
         LambdaQueryWrapper<User> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(User::getId, userId);
         myListContentVO.setAvatar(userMapper.selectOne(queryWrapper1).getAvatar());
+        myListContentVO.setName(userMapper.selectOne(queryWrapper1).getUsername());
         myListContentVO.setRecentChat(chatList.getRecentChat());
         LambdaQueryWrapper<Notification> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Notification::getUserId,chatList.getUser1Id());
