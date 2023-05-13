@@ -24,7 +24,7 @@ public class AdminAndReport {
     private Long reportedUserId;
     private String reportType;
     private String reportReason;
-    private String createAt;
+    private String createdAt;
     private String image;
 }
 

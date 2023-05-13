@@ -5,17 +5,21 @@ package com.techwave.service.impl;/**
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.techwave.entity.SectionBanUser;
+import com.techwave.entity.vo.SectionBanVO;
 import com.techwave.mapper.SectionBanUserMapper;
+import com.techwave.mapper.UserMapper;
 import com.techwave.service.BanService;
+import com.techwave.service.UserService;
 import com.techwave.utils.Result;
 import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @descriptions: 在版块内封禁用户
@@ -27,6 +31,12 @@ import java.text.SimpleDateFormat;
 public class BanServiceImpl implements BanService {
     @Autowired
     SectionBanUserMapper sectionBanUserMapper;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    UserMapper userMapper;
 
     @Override
     public Result banSectionUser(Long userId, Long sectionId, Timestamp banUntil) {
@@ -82,5 +92,27 @@ public class BanServiceImpl implements BanService {
                 return true;
             }
         }
+    }
+    @Override
+        public Result getBannedList(Integer sectionId){
+        List<SectionBanUser> banList = sectionBanUserMapper.selectList();
+        List<SectionBanVO> newVo = new ArrayList<SectionBanVO>();
+        for(SectionBanUser item:banList) {
+            SectionBanVO sectionBanVO = new SectionBanVO();
+            sectionBanVO.setSectionId(item.getSectionId());
+            sectionBanVO.setBanUntil(item.getBanUntil());
+            sectionBanVO.setUserId(item.getUserId());
+            sectionBanVO.setId(item.getId());
+            sectionBanVO.setCreatedAt(item.getCreatedAt());
+            sectionBanVO.setUserName(userMapper.selectById(item.getUserId()).getUsername());
+            System.out.println(sectionId);
+            System.out.println(item.getSectionId());
+            if(item.getSectionId().longValue()==sectionId)
+            {
+                System.out.println("wcnm");
+                newVo.add(sectionBanVO);
+            }
+        }
+        return Result.success(20000, "获取举报列表成功", newVo);
     }
 }

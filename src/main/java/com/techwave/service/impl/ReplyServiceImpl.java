@@ -228,4 +228,12 @@ public class ReplyServiceImpl implements ReplyService {
         Reply reply = replyMapper.selectOne(queryWrapper);
         return reply.getAuthorId();
     }
+
+    @Override
+    public Reply findContentById(Long Id) {
+        LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Reply::getId, Id);
+        queryWrapper.last("limit 1");
+        return replyMapper.selectOne(queryWrapper);
+    }
 }

@@ -14,6 +14,6 @@ public class SectionNameDTO {
 
     private String name;
 
-    private Integer sectionId;
+    private Long sectionId;
 
 }

@@ -17,6 +17,10 @@ public interface PostService {
 
     Result getPostData(Long userId, PostDataDTO postDataDTO) throws ParseException;
 
+    Result pinOrUnpinPost(Long userId, Long postId);
+
+    Result highlightOrUnhighlightPost(Long userId, Long postId);
+
     Result hotPost();
 
     Result getNews();
@@ -40,4 +44,6 @@ public interface PostService {
     List<PostDataVO> findHighlightedPostBySectionIdWithPage(Long sectionId, Integer page, Integer perPage);
 
     Result likeOrUnlikePost(Long userId, Long postId);
+
+    Result deletePostByModerator(Long userId, Long postId);
 }
