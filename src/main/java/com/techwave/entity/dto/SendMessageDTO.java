@@ -13,7 +13,7 @@ public class SendMessageDTO {
 
     private Integer targetId;
 
-    private String message;
+    private String text;
 
-
+    private String time;
 }

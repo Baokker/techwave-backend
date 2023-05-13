@@ -1,4 +1,5 @@
 package com.techwave.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -7,33 +8,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
+/**
+ * @author xiaoming xxx@163.com
+ * @version 2023/5/12 20:39
+ * @since JDK8
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName(value = "t_private_message")
-public class PrivateMessage {
+@TableName(value = "t_chat_list")
+public class ChatList {
     @TableId(type = IdType.AUTO)
     private Long id;
-
-    private  Long senderId;
-
-    private Long recipientId;
-
-    private String messageText;
-
-    private String sendAt;
-
-    private Long senderDeletedBy;
-
-    private String senderDeletedAt;
-
-    private Long recipientDeletedBy;
-
-    private String recipientDeletedAt;
-
-
-
+    //自己
+    private Long user1Id;
+    //好友
+    private Long user2Id;
+    private String recentChat;
+    private String recentTime;
 }
+

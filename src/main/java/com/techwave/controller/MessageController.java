@@ -4,6 +4,7 @@ import com.techwave.entity.dto.CollectPostDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.service.CommentService;
+import com.techwave.service.MessageService;
 import com.techwave.service.NotificationService;
 import com.techwave.service.ReplyService;
 import com.techwave.utils.TCode;
@@ -26,7 +27,8 @@ public class MessageController {
     private ReplyService replyService;
     @Autowired
     private CommentService commentService;
-
+    @Autowired
+    private MessageService messageService;
     @Autowired
     private NotificationService notificationService;
 
@@ -67,24 +69,24 @@ public class MessageController {
     }
 
     @GetMapping("list")
-    public Result getListData(@RequestHeader(value = "T-Token", required = false) String token){
+    public Result getListData(@RequestHeader("T-Token") String token){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return messageService.findListsById(userId);
     }
 
     @GetMapping("history")
-    public Result getHistoryData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
+    public Result getHistoryData(@RequestHeader("T-Token") String token, Integer targetId){
         //只有targetId就不封装了
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return messageService.findHistoriesById(userId, Long.valueOf(targetId));
     }
 
     @DeleteMapping("history")
@@ -116,7 +118,8 @@ public class MessageController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+
+        return messageService.sendMessage(userId,sendMessageDTO);
     }
 
     @PostMapping("read")
