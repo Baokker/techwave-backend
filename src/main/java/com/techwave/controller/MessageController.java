@@ -1,11 +1,14 @@
 package com.techwave.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.techwave.entity.AdminAndReport;
 import com.techwave.entity.BlockList;
+import com.techwave.entity.ChatList;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.dto.SendMessageDTO;
 import com.techwave.mapper.AdminAndReportMapper;
 import com.techwave.mapper.BlocklistMapper;
+import com.techwave.mapper.ChatListMapper;
 import com.techwave.service.CommentService;
 import com.techwave.service.MessageService;
 import com.techwave.service.NotificationService;
@@ -41,6 +44,8 @@ public class MessageController {
     private AdminAndReportMapper adminAndReportMapper;
     @Autowired
     private BlocklistMapper blocklistMapper;
+    @Autowired
+    private ChatListMapper chatListMapper;
 
     @GetMapping("reply")
     public Result getReply(@RequestHeader("T-Token") String token,Integer page,Integer perPage){
@@ -100,14 +105,22 @@ public class MessageController {
     }
 
     @DeleteMapping("history")
-    public Result deleteHistoryData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
+    public Result deleteHistoryData(@RequestHeader("T-Token") String token, Integer targetId){
         //只有targetId就不封装了
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        LambdaQueryWrapper<ChatList> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(ChatList::getUser1Id, userId);
+        queryWrapper1.eq(ChatList::getUser2Id, targetId);
+        queryWrapper1.last("limit 1");
+        ChatList chatList = chatListMapper.selectOne(queryWrapper1);
+        if(chatList == null)
+            return Result.fail(-1, "参数有误", null);
+        chatListMapper.deleteById(chatList);
+        return Result.success(20000, "删除私信记录成功", null);
     }
 
     @PostMapping ("block")
