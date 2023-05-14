@@ -4,12 +4,13 @@ import com.techwave.entity.AdminAndReport;
 import com.techwave.entity.SectionAndRequest;
 import com.techwave.entity.dto.BanUserDTO;
 import com.techwave.entity.dto.SolveDTO;
+import com.techwave.entity.dto.UnbanUserDTO;
 import com.techwave.entity.vo.AdminReportListVO;
-import com.techwave.entity.vo.SectionRequestsVO;
 import com.techwave.entity.vo.SectionRequestsVO;
 import com.techwave.utils.Result;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.List;
 
 public interface AdminService {
@@ -42,4 +43,11 @@ public interface AdminService {
     Result banChatUser(Long userId, Long reportId, String createdAt, Timestamp banUntilTime);
 
     Result deleteReportData(Integer reportId);
+
+    Result unbanUser(Integer chatBanId);
+
+    //判断当前是否已到解封时间
+    Boolean getUserIsUnbanned(Integer userId) throws ParseException;
+
+    Result getBanList();
 }
