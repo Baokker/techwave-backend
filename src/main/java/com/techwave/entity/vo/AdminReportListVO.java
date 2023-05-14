@@ -12,10 +12,8 @@ public class AdminReportListVO {
     private Long reportedUserId;
     private String reportType;
     private String reportReason;
-    private String image;
+    private String[] image;
     private String userName;
     private String avatar;
     private String summary;
-
-    private Boolean isBanned;
 }

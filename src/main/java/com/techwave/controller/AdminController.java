@@ -2,6 +2,7 @@ package com.techwave.controller;
 
 import com.techwave.entity.Admin;
 import com.techwave.entity.dto.SolveDTO;
+import com.techwave.entity.dto.UnbanUserDTO;
 import com.techwave.service.AdminService;
 import com.techwave.utils.TCode;
 import com.techwave.utils.JwtUtil;
@@ -89,6 +90,23 @@ public class AdminController {
         }
         System.out.println(reportId);
         return adminService.deleteReportData(reportId);
+    }
+    @GetMapping("ban_user")
+    public Result getBanList(@RequestHeader(value = "T-Token",required = false) String token){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        return adminService.getBanList();
+    }
+    @PostMapping("unban_user")
+    public Result unbanUser(@RequestHeader(value = "T-Token",required = false) String token ,@RequestBody UnbanUserDTO unbanUserDTO){
+        String userIdStr = JwtUtil.getUserIdFromToken(token);
+        if (userIdStr == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
+        }
+        Integer chatBanId=unbanUserDTO.getChatBanId();
+        return adminService.unbanUser(chatBanId);
     }
 
 

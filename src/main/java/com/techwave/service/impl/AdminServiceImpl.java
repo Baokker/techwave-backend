@@ -2,16 +2,10 @@ package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.techwave.entity.AdminAndReport;
-import com.techwave.entity.ChatBanUser;
-import com.techwave.entity.Section;
-import com.techwave.entity.SectionAndRequest;
+import com.techwave.entity.*;
 import com.techwave.entity.dto.BanUserDTO;
 import com.techwave.entity.dto.SolveDTO;
-import com.techwave.entity.vo.AdminReportDataVO;
-import com.techwave.entity.vo.AdminReportListVO;
-import com.techwave.entity.vo.SectionRequestsTotalVO;
-import com.techwave.entity.vo.SectionRequestsVO;
+import com.techwave.entity.vo.*;
 import com.techwave.mapper.*;
 import com.techwave.service.AdminService;
 import com.techwave.utils.Result;
@@ -22,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.techwave.service.UserService;
 
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class AdminServiceImpl implements AdminService {
     @Autowired
-    private AdminMapper adminMapper;
+    private NotificationMapper notificationMapper;
     @Autowired
     private AdminAndReportMapper adminAndReportMapper;
     @Autowired
@@ -75,15 +70,12 @@ public class AdminServiceImpl implements AdminService {
         AdminReportListVO adminReportListVO = new AdminReportListVO();
         BeanUtils.copyProperties(adminAndReport,adminReportListVO);
 
+        String[] image = adminAndReport.getImage().split(",");
+        adminReportListVO.setImage(image);
+
         adminReportListVO.setUserName(userService.findUserById(adminAndReport.getReportedUserId()).getUsername());
         adminReportListVO.setAvatar(userService.findUserById(adminAndReport.getReportedUserId()).getAvatar());
         adminReportListVO.setSummary(userService.findUserById(adminAndReport.getReportedUserId()).getSummary());
-
-        //查询用户是否已封禁
-        LambdaQueryWrapper<ChatBanUser> lambdaQueryWrapper= new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ChatBanUser::getUserId,adminAndReport.getReportedUserId());
-
-        adminReportListVO.setIsBanned(chatBanUserMapper.selectOne(lambdaQueryWrapper)!=null);
 
         return adminReportListVO;
     }
@@ -161,7 +153,16 @@ public class AdminServiceImpl implements AdminService {
         sectionMapper.insert(section1);
 
         //插入完成后从申请表中删除
-        rejectSectionRequest(sectionRequestId);
+        sectionAndRequestMapper.deleteById(sectionRequestId);
+
+        //发送系统通知
+        Notification notification = Notification.builder().
+                userId(sectionAndRequest.getUserId()).
+                content("您的版块《"+sectionAndRequest.getName()+"》创建申请已处理，处理结果：通过。").
+                notificationType("system").
+                title("申请处理通知").
+                build();
+        notificationMapper.insert(notification);
 
         return Result.success(20000,"通过版块申请成功",null);
     }
@@ -174,6 +175,15 @@ public class AdminServiceImpl implements AdminService {
         }
         //删除版块申请
         sectionAndRequestMapper.deleteById(sectionRequestId);
+
+        //发送系统通知
+        Notification notification = Notification.builder().
+                userId(sectionAndRequest.getUserId()).
+                content("您的版块《"+sectionAndRequest.getName()+"》创建申请已处理，处理结果：拒绝通过。").
+                notificationType("system").
+                title("申请处理通知").
+                build();
+        notificationMapper.insert(notification);
 
         return Result.success(20000,"已拒绝该版块申请",null);
     }
@@ -227,6 +237,19 @@ public class AdminServiceImpl implements AdminService {
                 .createdAt(createdAt)
                 .build();
         chatBanUserMapper.insert(chatBanUser);
+
+        //给举报者发送系统通知
+        AdminAndReport adminAndReport = adminAndReportMapper.selectById(reportId);
+        Notification notification = Notification.builder().
+                userId(adminAndReport.getUserId()).
+                content("您的举报已处理，处理结果：该用户被封禁。").
+                notificationType("system").
+                title("举报处理通知").
+                build();
+        notificationMapper.insert(notification);
+
+        adminAndReportMapper.deleteById(reportId);
+
         return Result.success(20000,"封禁成功",null);
     }
     @Override
@@ -238,6 +261,71 @@ public class AdminServiceImpl implements AdminService {
             return Result.fail(-1,"该举报信息不存在",null);
         }
         adminAndReportMapper.deleteById(reportId);
-        return Result.success(20000,"删除举报信息成功",null);
+
+        //给举报者发送系统通知
+        AdminAndReport adminAndReport = adminAndReportMapper.selectById(reportId);
+        Notification notification = Notification.builder().
+                userId(adminAndReport.getUserId()).
+                content("您的举报已处理，处理结果：您的举报信息被驳回。").
+                notificationType("system").
+                title("举报处理通知").
+                build();
+        notificationMapper.insert(notification);
+
+        return Result.success(20000,"拒绝受理举报信息成功",null);
+    }
+
+    @Override
+    public Result unbanUser(Integer chatBanId) {
+        if(chatBanId<0)
+            return Result.fail(TCode.PARAMS_ERROR.getCode(),TCode.PARAMS_ERROR.getMsg());
+        ChatBanUser chatBanUser = chatBanUserMapper.selectById(chatBanId);
+        if(chatBanUser==null)
+            return Result.fail(-1,"该用户未被封禁",null);
+        chatBanUserMapper.deleteById(chatBanId);
+        return Result.success(20000,"解封成功",null);
+    }
+    //判断当前是否已到解封时间
+    @Override
+    public Boolean getUserIsUnbanned(Integer userId) throws ParseException {
+        LambdaQueryWrapper<ChatBanUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ChatBanUser::getUserId, userId);
+        ChatBanUser chatBanUser = chatBanUserMapper.selectOne(queryWrapper);
+        if (chatBanUser == null) {
+            return false;
+        } else {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Timestamp banUntil = new Timestamp(format.parse(chatBanUser.getBanUntil()).getTime());
+
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+            Long diffInMillis = currentTimestamp.getTime() - banUntil.getTime();
+            if (diffInMillis > 0) {
+                chatBanUserMapper.deleteById(chatBanUser.getId());
+                return true;
+            } else {
+
+                return false;
+            }
+        }
+    }
+    @Override
+    public Result getBanList(){
+        ChatBanVO chatBanVO = new ChatBanVO();
+        List<ChatBanListVO> chatBanListVO=new ArrayList<>();
+        LambdaQueryWrapper<ChatBanUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.gt(ChatBanUser::getId,0);
+        List<ChatBanUser> chatBanUsers = chatBanUserMapper.selectList(queryWrapper);
+
+        for( ChatBanUser chatBanUser : chatBanUsers){
+            ChatBanListVO chatBanListVO1 = new ChatBanListVO();
+            BeanUtils.copyProperties(chatBanUser,chatBanListVO1);
+            chatBanListVO1.setUserName(userService.findUserById(chatBanUser.getUserId()).getUsername());
+            chatBanListVO.add(chatBanListVO1);
+        }
+
+        chatBanVO.setChatBanListVO(chatBanListVO);
+        chatBanVO.setTotal(chatBanListVO.size());
+        return Result.success(20000,"获取封禁列表成功",chatBanVO);
     }
 }
