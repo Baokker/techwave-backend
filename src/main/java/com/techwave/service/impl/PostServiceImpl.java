@@ -336,7 +336,6 @@ public class PostServiceImpl implements PostService {
             postMapper.updateById(post);
 
             Notification notification = new Notification();
-            notification.setSenderId(userId);
             notification.setUserId(postMapper.selectById(postId).getAuthorId());
             notification.setNotificationType("system");
             notification.setContent("版主置顶了你的帖子《" + postMapper.selectById(postId).getTitle() + "》");
@@ -350,7 +349,6 @@ public class PostServiceImpl implements PostService {
             postMapper.updateById(post);
 
             LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
-            queryWrapper1.eq(Notification::getSenderId, userId);
             queryWrapper1.eq(Notification::getUserId, postMapper.selectById(postId).getAuthorId());
             queryWrapper1.eq(Notification::getNotificationType, "system");
             queryWrapper1.eq(Notification::getLink, "/post/" + postId);
@@ -371,13 +369,12 @@ public class PostServiceImpl implements PostService {
             postMapper.updateById(post);
 
             Notification notification = new Notification();
-            notification.setSenderId(userId);
             notification.setUserId(postMapper.selectById(postId).getAuthorId());
             notification.setNotificationType("system");
             notification.setContent("版主将你的帖子《" + postMapper.selectById(postId).getTitle() + "》设为精华");
             notification.setIsRead(false);
             notification.setLink("/post/" + postId);
-            return Result.success(20000, "highli successfully", null);
+            return Result.success(20000, "highlight successfully", null);
 
 
         } else {
@@ -385,14 +382,13 @@ public class PostServiceImpl implements PostService {
             postMapper.updateById(post);
 
             LambdaQueryWrapper<Notification> queryWrapper1 = new LambdaQueryWrapper<>();
-            queryWrapper1.eq(Notification::getSenderId, userId);
             queryWrapper1.eq(Notification::getUserId, postMapper.selectById(postId).getAuthorId());
             queryWrapper1.eq(Notification::getNotificationType, "system");
             queryWrapper1.eq(Notification::getLink, "/post/" + postId);
 
             notificationMapper.delete(queryWrapper1);
 
-            return Result.success(20000, "unpin successfully", null);
+            return Result.success(20000, "unhighlight successfully", null);
         }
     }
 

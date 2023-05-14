@@ -14,8 +14,6 @@ public class SectionBanUserDTO {
 
     private Integer sectionId;
 
-    private  String createdAt;
-
     private String banUntil;
 
 

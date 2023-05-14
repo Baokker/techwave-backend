@@ -4,9 +4,12 @@ package com.techwave.service.impl;/**
  */
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.techwave.entity.Notification;
 import com.techwave.entity.SectionBanUser;
+import com.techwave.entity.dto.SectionBanUserDTO;
 import com.techwave.entity.vo.SectionBanVO;
 import com.techwave.mapper.SectionBanUserMapper;
+import com.techwave.mapper.SectionMapper;
 import com.techwave.mapper.UserMapper;
 import com.techwave.service.BanService;
 import com.techwave.service.UserService;
@@ -20,6 +23,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @descriptions: 在版块内封禁用户
@@ -37,6 +41,9 @@ public class BanServiceImpl implements BanService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    SectionMapper sectionMapper;
 
     @Override
     public Result banSectionUser(Long userId, Long sectionId, Timestamp banUntil) {
@@ -86,16 +93,20 @@ public class BanServiceImpl implements BanService {
 
             Long diffInMillis = currentTimestamp.getTime() - banUntil.getTime();
             if (diffInMillis > 0) {
-                return false;
-            } else {
                 sectionBanUserMapper.deleteById(sectionBanUser.getId());
                 return true;
+            } else {
+                return false;
             }
         }
     }
     @Override
-        public Result getBannedList(Integer sectionId){
+        public Result getBannedList(Integer sectionId) throws ParseException {
         List<SectionBanUser> banList = sectionBanUserMapper.selectList();
+        for(SectionBanUser item:banList){
+            Long userId = item.getUserId();
+            this.getUserIsBannedInSection(userId,(long)sectionId);
+        }
         List<SectionBanVO> newVo = new ArrayList<SectionBanVO>();
         for(SectionBanUser item:banList) {
             SectionBanVO sectionBanVO = new SectionBanVO();
@@ -105,14 +116,48 @@ public class BanServiceImpl implements BanService {
             sectionBanVO.setId(item.getId());
             sectionBanVO.setCreatedAt(item.getCreatedAt());
             sectionBanVO.setUserName(userMapper.selectById(item.getUserId()).getUsername());
-            System.out.println(sectionId);
-            System.out.println(item.getSectionId());
             if(item.getSectionId().longValue()==sectionId)
             {
-                System.out.println("wcnm");
                 newVo.add(sectionBanVO);
             }
         }
         return Result.success(20000, "获取举报列表成功", newVo);
+    }
+
+    @Override
+    public Result banUser(SectionBanUserDTO sectionBanUserDTO) {
+        Long userId = Long.valueOf(sectionBanUserDTO.getTargetId());
+        Long sectionId = Long.valueOf(sectionBanUserDTO.getSectionId());
+        String duration= sectionBanUserDTO.getBanUntil();
+        int banUntil=0;
+
+        if(userId<0||sectionId<0||duration==null){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(),TCode.PARAMS_ERROR.getMsg());
+        }
+        switch (duration){
+            case "一个月":
+                banUntil = 30;
+                break;
+            case "三个月":
+                banUntil = 90;
+                break;
+            case "半年":
+                banUntil = 180;
+                break;
+            case "一年":
+                banUntil = 365;
+                break;
+            default:break;
+        }
+
+        Timestamp banUntilTime = new Timestamp(System.currentTimeMillis()+ TimeUnit.DAYS.toMillis(banUntil));
+
+        Notification notification = new Notification();
+        notification.setUserId(userId);
+        notification.setNotificationType("system");
+        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"板块中你被封禁至"+banUntilTime);
+        notification.setIsRead(false);
+
+        return banSectionUser(userId,sectionId,banUntilTime);
     }
 }

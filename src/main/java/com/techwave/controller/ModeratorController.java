@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -259,7 +260,7 @@ public class ModeratorController {
     }
 
     @GetMapping("banned_user")
-    public Result getAllBannedUser(@RequestHeader(value = "T-Token") String token,Integer sectionId){
+    public Result getAllBannedUser(@RequestHeader(value = "T-Token") String token,Integer sectionId) throws ParseException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -289,7 +290,7 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return banService.banUser(sectionBanUserDTO);
     }
 
 

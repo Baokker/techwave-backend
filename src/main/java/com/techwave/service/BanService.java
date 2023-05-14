@@ -1,5 +1,6 @@
 package com.techwave.service;
 
+import com.techwave.entity.dto.SectionBanUserDTO;
 import com.techwave.utils.Result;
 
 import java.sql.Timestamp;
@@ -18,5 +19,8 @@ public interface BanService {
 
     Boolean getUserIsBannedInSection(Long userId, Long sectionId) throws ParseException;
 
-    Result getBannedList(Integer sectionId);
+    Result getBannedList(Integer sectionId) throws ParseException;
+
+    Result banUser(SectionBanUserDTO sectionBanUserDTO);
+
 }
