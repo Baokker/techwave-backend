@@ -36,6 +36,10 @@ public class AdminServiceImpl implements AdminService {
     private SectionMapper sectionMapper;
     @Autowired
     private ChatBanUserMapper chatBanUserMapper;
+    @Autowired
+    private  ModeratorMapper moderatorMapper;
+    @Autowired
+    private  UserMapper userMapper;
     @Override
     public Result getReportList(int page, int perPage) {
         if(page<0||perPage<0){
@@ -151,6 +155,17 @@ public class AdminServiceImpl implements AdminService {
         section1.setDescription(sectionAndRequest.getDescription());
         section1.setModeratorId(sectionAndRequest.getUserId());
         sectionMapper.insert(section1);
+
+        //将该用户和版块插入到版主表中
+        Moderator moderator = new Moderator();
+        moderator.setUserId(sectionAndRequest.getUserId());
+        moderator.setSectionId(section1.getId());
+        moderatorMapper.insert(moderator);
+
+        //更新用户表
+        User user = new User();
+        user.setIsModerator(true);
+        userMapper.update(user,new LambdaQueryWrapper<User>().eq(User::getId,sectionAndRequest.getUserId()));
 
         //插入完成后从申请表中删除
         sectionAndRequestMapper.deleteById(sectionRequestId);
