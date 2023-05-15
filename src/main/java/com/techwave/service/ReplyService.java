@@ -7,12 +7,13 @@ import com.techwave.entity.vo.ReplyVO;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnReplyDTO;
 
+import java.text.ParseException;
 import java.util.List;
 
 public interface ReplyService {
-    Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO);
+    Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) throws ParseException;
 
-    Result replyOnReply(Long userId, ReplyOnReplyDTO replyOnReplyDTO);
+    Result replyOnReply(Long userId, ReplyOnReplyDTO replyOnReplyDTO) throws ParseException;
 
     Result deleteReply(Long userId, Long replyId);
 

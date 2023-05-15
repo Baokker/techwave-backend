@@ -7,17 +7,16 @@ import com.techwave.entity.vo.CommentVO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
 import com.techwave.mapper.*;
+import com.techwave.service.*;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnPostDTO;
-import com.techwave.service.CommentService;
-import com.techwave.service.PostService;
-import com.techwave.service.ReplyService;
-import com.techwave.service.UserService;
+import com.techwave.utils.TCode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -51,6 +50,8 @@ public class CommentServiceImpl implements CommentService {
     private NotificationMapper notificationMapper;
     @Autowired
     private PostMapper postMapper;
+    @Autowired
+    private BanService banService;
 
     @Override
     public List<CommentVO>  findCommentVOsByPostIdWithPage(Long userId, Long postId, Integer offset, Integer limit, Boolean isOnlyHost, Long authorId) {
@@ -74,8 +75,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO) {
+    public Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO) throws ParseException {
         Long postId = replyOnPostDTO.getPostId();
+
+        Long sectionId = postMapper.selectById(postId).getSectionId();
+        if (banService.getUserIsBannedInSection(userId, sectionId)) {
+            return Result.fail(TCode.FAIL.getCode(), "当前正在被封禁，无法发言！", null);
+        }
 
         postService.updatePostByCommentCount(postId, true);
 

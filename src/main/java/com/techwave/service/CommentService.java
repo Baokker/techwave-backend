@@ -6,6 +6,7 @@ import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnPostDTO;
 
+import java.text.ParseException;
 import java.util.List;
 
 public interface CommentService {
@@ -14,7 +15,7 @@ public interface CommentService {
 
     CommentAndBody findContentById(Long commentId);
 
-    Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO);
+    Result replyOnPost(Long userId, ReplyOnPostDTO replyOnPostDTO) throws ParseException;
 
     Result deleteComment(Long userId, Long commentId);
 

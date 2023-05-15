@@ -6,15 +6,18 @@ import com.techwave.entity.dto.ReplyOnCommentDTO;
 import com.techwave.entity.vo.MyReplyVO;
 import com.techwave.entity.vo.ReplyVO;
 import com.techwave.mapper.*;
+import com.techwave.service.BanService;
 import com.techwave.utils.Result;
 import com.techwave.entity.dto.ReplyOnReplyDTO;
 import com.techwave.service.ReplyService;
 import com.techwave.service.UserService;
+import com.techwave.utils.TCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -42,9 +45,21 @@ public class ReplyServiceImpl implements ReplyService {
     private NotificationMapper notificationMapper;
     @Autowired
     private CommentAndBodyMapper commentAndBodyMapper;
+    @Autowired
+    private BanService banService;
+    @Autowired
+    private PostMapper postMapper;
 
     @Override
-    public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) {
+    public Result replyOnComment(Long userId, ReplyOnCommentDTO replyOnCommentDTO) throws ParseException {
+        // check if userId is banned
+        Long postId = commentMapper.selectById(replyOnCommentDTO.getCommentId()).getPostId();
+        Long sectionId = postMapper.selectById(postId).getSectionId();
+        if (banService.getUserIsBannedInSection(userId, sectionId)) {
+            return Result.fail(TCode.FAIL.getCode(), "当前正在被封禁，无法发言！", null);
+        }
+
+
         Long commentId = replyOnCommentDTO.getCommentId();
         String content = replyOnCommentDTO.getContent();
         Reply reply = new Reply();
@@ -81,9 +96,17 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    public Result replyOnReply(Long userId, ReplyOnReplyDTO replyOnReplyDTO) {
+    public Result replyOnReply(Long userId, ReplyOnReplyDTO replyOnReplyDTO) throws ParseException {
         Long replyId = replyOnReplyDTO.getReplyId();
         String content = replyOnReplyDTO.getContent();
+
+        // check if userId is banned
+        Long commentId = replyMapper.selectById(replyOnReplyDTO.getReplyId()).getCommentId();
+        Long postId = commentMapper.selectById(commentId).getPostId();
+        Long sectionId = postMapper.selectById(postId).getSectionId();
+        if (banService.getUserIsBannedInSection(userId, sectionId)) {
+            return Result.fail(TCode.FAIL.getCode(), "当前正在被封禁，无法发言！", null);
+        }
 
         LambdaQueryWrapper<Reply> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Reply::getId, replyId);

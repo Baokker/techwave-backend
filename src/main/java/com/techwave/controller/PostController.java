@@ -65,7 +65,7 @@ public class PostController {
     }
 
     @PostMapping("reply_on_post")
-    public Result replyOnPost(@RequestHeader("T-Token") String token, @RequestBody ReplyOnPostDTO replyOnPostDTO) {
+    public Result replyOnPost(@RequestHeader("T-Token") String token, @RequestBody ReplyOnPostDTO replyOnPostDTO) throws ParseException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -78,7 +78,7 @@ public class PostController {
     }
 
     @PostMapping("reply_on_comment")
-    public Result replyOnComment(@RequestHeader("T-Token") String token, @RequestBody ReplyOnCommentDTO replyOnCommentDTO) {
+    public Result replyOnComment(@RequestHeader("T-Token") String token, @RequestBody ReplyOnCommentDTO replyOnCommentDTO) throws ParseException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
@@ -91,7 +91,7 @@ public class PostController {
     }
 
     @PostMapping("reply_on_reply")
-    public Result replyOnReply(@RequestHeader("T-Token") String token, @RequestBody ReplyOnReplyDTO replyOnReplyDTO) {
+    public Result replyOnReply(@RequestHeader("T-Token") String token, @RequestBody ReplyOnReplyDTO replyOnReplyDTO) throws ParseException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
