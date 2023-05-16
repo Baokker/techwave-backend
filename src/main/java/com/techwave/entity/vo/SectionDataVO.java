@@ -26,6 +26,8 @@ public class SectionDataVO {
 
     private Boolean isCollected;
 
+    private Boolean isBanned;
+
     private String summary;
 
     private List<SubSection> subSectionList;

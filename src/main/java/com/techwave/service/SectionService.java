@@ -5,10 +5,11 @@ import com.techwave.entity.SubSection;
 import com.techwave.entity.dto.*;
 import com.techwave.utils.Result;
 
+import java.text.ParseException;
 import java.util.List;
 
 public interface SectionService {
-    Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage);
+    Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) throws ParseException;
 
     Section findSectionById(Long sectionId);
     SubSection findSubSectionById(Long subsectionId);

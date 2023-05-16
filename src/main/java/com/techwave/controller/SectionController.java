@@ -13,6 +13,7 @@ import com.techwave.service.SectionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Map;
 
 /**
@@ -33,7 +34,7 @@ public class SectionController {
     private PostService postService;
 
     @GetMapping("{sectionId}/info")
-    public Result getSectionData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable Integer sectionId, Integer page, Integer perPage) {
+    public Result getSectionData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable Integer sectionId, Integer page, Integer perPage) throws ParseException {
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return sectionService.getSectionData(null, (long) sectionId, page, perPage);

@@ -6,15 +6,13 @@ import com.techwave.entity.*;
 import com.techwave.entity.dto.*;
 import com.techwave.entity.vo.*;
 import com.techwave.mapper.*;
-import com.techwave.service.CollectService;
-import com.techwave.service.PostService;
-import com.techwave.service.SectionService;
-import com.techwave.service.ThreadService;
+import com.techwave.service.*;
 import com.techwave.utils.TCode;
 import com.techwave.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -44,17 +42,17 @@ public class SectionServiceImpl implements SectionService {
     private ThreadService threadService;
     @Autowired
     private PostMapper postMapper;
-
     @Autowired
     private UserMapper userMapper;
-
     @Autowired
     private ModeratorMapper moderatorMapper;
-
     @Autowired
     private NotificationMapper notificationMapper;
+    @Autowired
+    private BanService banService;
+
     @Override
-    public Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) {
+    public Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) throws ParseException {
         if (sectionId == null)
             return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
 
@@ -69,8 +67,10 @@ public class SectionServiceImpl implements SectionService {
 
         if (userId != null) {
             sectionDataVO.setIsCollected(collectService.isUserCollectSection(userId, sectionId));
+            sectionDataVO.setIsBanned(banService.getUserIsBannedInSection(userId, sectionId));
         } else {
             sectionDataVO.setIsCollected(false);
+            sectionDataVO.setIsBanned(false);
         }
         sectionDataVO.setSummary(section.getDescription());
         sectionDataVO.setSubSectionList(this.findSubSectionBySectionId(sectionId));
