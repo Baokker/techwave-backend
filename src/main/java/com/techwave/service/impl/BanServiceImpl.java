@@ -8,6 +8,7 @@ import com.techwave.entity.Notification;
 import com.techwave.entity.SectionBanUser;
 import com.techwave.entity.dto.SectionBanUserDTO;
 import com.techwave.entity.vo.SectionBanVO;
+import com.techwave.mapper.NotificationMapper;
 import com.techwave.mapper.SectionBanUserMapper;
 import com.techwave.mapper.SectionMapper;
 import com.techwave.mapper.UserMapper;
@@ -45,6 +46,9 @@ public class BanServiceImpl implements BanService {
     @Autowired
     SectionMapper sectionMapper;
 
+    @Autowired
+    NotificationMapper notificationMapper;
+
     @Override
     public Result banSectionUser(Long userId, Long sectionId, Timestamp banUntil) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -71,6 +75,14 @@ public class BanServiceImpl implements BanService {
     @Override
     public Result unBanSectionUser(Long userId, Long sectionId) {
         LambdaQueryWrapper<SectionBanUser> queryWrapper = new LambdaQueryWrapper<>();
+
+        Notification notification = new Notification();
+        notification.setUserId(userId);
+        notification.setNotificationType("system");
+        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"版块中你已被解除封禁");
+        notification.setIsRead(false);
+        notificationMapper.insert(notification);
+        
         queryWrapper.eq(SectionBanUser::getUserId, userId)
                 .eq(SectionBanUser::getSectionId, sectionId);
         sectionBanUserMapper.delete(queryWrapper);
@@ -157,6 +169,7 @@ public class BanServiceImpl implements BanService {
         notification.setNotificationType("system");
         notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"版块中你被封禁至"+banUntilTime);
         notification.setIsRead(false);
+        notificationMapper.insert(notification);
 
         return banSectionUser(userId,sectionId,banUntilTime);
     }
