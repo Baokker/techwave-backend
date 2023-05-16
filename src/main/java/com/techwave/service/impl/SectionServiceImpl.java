@@ -48,6 +48,9 @@ public class SectionServiceImpl implements SectionService {
 
     @Autowired
     private ModeratorMapper moderatorMapper;
+
+    @Autowired
+    private NotificationMapper notificationMapper;
     @Override
     public Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) {
         if (sectionId == null)
@@ -579,6 +582,14 @@ public class SectionServiceImpl implements SectionService {
     public Result transferSection(Long userId, TransferSectionDTO transferSectionDTO) {
         Long targetId = transferSectionDTO.getTargetId();
         Long sectionId = transferSectionDTO.getSectionId();
+
+        Notification notification = new Notification();
+        notification.setUserId(targetId);
+        notification.setTitle("版主转让通知");
+        notification.setNotificationType("system");
+        notification.setContent("您已经成为"+sectionMapper.selectById(sectionId).getName()+"板块的版主");
+        notification.setIsRead(false);
+        notificationMapper.insert(notification);
 
         LambdaQueryWrapper<Moderator> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(Moderator::getSectionId, sectionId);

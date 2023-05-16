@@ -185,22 +185,20 @@ public class ModeratorController {
     }
 
     @DeleteMapping("post_report")
-    public Result deletePostReportData(@RequestHeader(value = "T-Token", required = false) String token, Integer reportId){
+    public Result deletePostReportData(@RequestHeader(value = "T-Token", required = false) String token, Long userId, Integer reportId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
-        Long userId = Long.valueOf(userIdStr);
         return reportService.deleteReport(userId,reportId);
     }
 
     @DeleteMapping("post")
-    public Result deletePostData(@RequestHeader(value = "T-Token", required = false) String token, Integer targetId){
+    public Result deletePostData(@RequestHeader(value = "T-Token", required = false) String token, Long userId, Integer targetId){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return null;
         }
-        Long userId = Long.valueOf(userIdStr);
         return reportService.deletePost(userId,targetId);
     }
 
@@ -210,8 +208,7 @@ public class ModeratorController {
         if (userIdStr == null) {
             return null;
         }
-        Long userId = Long.valueOf(userIdStr);
-        return reportService.deleteComentOrReply( userId, deleteCommentDTO);
+        return reportService.deleteCommentOrReply(  deleteCommentDTO);
     }
 
     @DeleteMapping("comment_report")

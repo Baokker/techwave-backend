@@ -6,6 +6,7 @@ package com.techwave.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.techwave.entity.*;
 import com.techwave.entity.dto.DeleteCommentDTO;
@@ -68,6 +69,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private CommentAndReplyMapper commentAndReplyMapper;
+
+    @Autowired
+    private NotificationMapper notificationMapper;
 
     @Override
     public Result createModeratorReport(ModeratorReportDTO moderatorReportDTO, Long userId) {
@@ -212,33 +216,43 @@ public class ReportServiceImpl implements ReportService {
     }
 
 @Override
-public Result deleteReport(Long userId, Integer repotId){
+public Result deleteReport(Long userId, Integer reportId){
     LambdaQueryWrapper<ModeratorReport> queryWrapper = new LambdaQueryWrapper<>();
-    queryWrapper.eq(ModeratorReport::getReportId, repotId);
+    queryWrapper.eq(ModeratorReport::getReportId, reportId);
     queryWrapper.last("limit 1");
     ModeratorReport moderatorReport = moderatorReportMapper.selectOne(queryWrapper);
     moderatorReportMapper.delete(queryWrapper);
 
     Notification notification = new Notification();
     notification.setUserId(userId);
+    notification.setTitle("举报处理通知");
     notification.setNotificationType("system");
     notification.setContent("您的举报已处理，处理结果：不通过");
     notification.setIsRead(false);
-
+    notificationMapper.insert(notification);
 
     return Result.success(20000, "okk", null);
 }
 
     @Override
     public Result deletePost(Long userId, Integer targetId){
-        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
 
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setNotificationType("system");
+        notification.setTitle("举报处理通知");
         notification.setContent("您的举报已处理，处理结果：通过，《"+postMapper.selectById(targetId).getTitle()+"》该帖子已被删除");
         notification.setIsRead(false);
+        notificationMapper.insert(notification);
 
+        LambdaQueryWrapper<Post> postQuery = new LambdaQueryWrapper<>();
+        postQuery.select(Post::getSectionId).eq(Post::getId, targetId);
+        Post post = postMapper.selectOne(postQuery);
+        Long sectionId = post.getSectionId();
+        LambdaUpdateWrapper<Section> sectionUpdate = new LambdaUpdateWrapper<>();
+        sectionUpdate.setSql("post_count = post_count - 1").eq(Section::getId, sectionId);
+
+        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getId, targetId);
         postMapper.delete(queryWrapper);
 
@@ -257,11 +271,15 @@ public Result deleteReport(Long userId, Integer repotId){
         ModeratorReport moderatorReport = moderatorReportMapper.selectOne(queryWrapper3);
         moderatorReportMapper.delete(queryWrapper3);
 
+
+
+
         return Result.success(20000, "okk", null);
     }
 
     @Override
-    public Result deleteComentOrReply(Long userId, DeleteCommentDTO deleteCommentDTO){
+    public Result deleteCommentOrReply(DeleteCommentDTO deleteCommentDTO){
+        Long userId = deleteCommentDTO.getUserId();
         Integer targetId = deleteCommentDTO.getTargetId();
         String reportType = deleteCommentDTO.getReportType();
         if (reportType.equals("comment")) {
@@ -269,9 +287,11 @@ public Result deleteReport(Long userId, Integer repotId){
 
             Notification notification = new Notification();
             notification.setUserId(userId);
+            notification.setTitle("举报处理通知");
             notification.setNotificationType("system");
             notification.setContent("您的举报已处理，处理结果：通过，相关违规评论已被删除");
             notification.setIsRead(false);
+            notificationMapper.insert(notification);
 
 
             queryWrapper.eq(Comment::getId, targetId);
@@ -302,8 +322,10 @@ public Result deleteReport(Long userId, Integer repotId){
             Notification notification = new Notification();
             notification.setUserId(userId);
             notification.setNotificationType("system");
+            notification.setTitle("举报处理通知");
             notification.setContent("您的举报已处理，处理结果：通过，相关违规回复已被删除");
             notification.setIsRead(false);
+            notificationMapper.insert(notification);
 
             queryWrapper1.eq(CommentAndReply::getReplyId, targetId);
             commentAndReplyMapper.delete(queryWrapper1);

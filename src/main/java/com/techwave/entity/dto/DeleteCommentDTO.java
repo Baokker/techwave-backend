@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeleteCommentDTO {
 
+    private Long userId;
+
     private Integer targetId;
 
     private String reportType;

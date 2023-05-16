@@ -29,9 +29,9 @@ public interface ReportService {
 
     Result getPostReportWithPage(SectionDataDTO sectionDataDTO);
 
-    Result deleteReport(Long userId, Integer repotId);
+    Result deleteReport(Long userId, Integer reportId);
 
     Result deletePost(Long userId, Integer targetId);
 
-    Result deleteComentOrReply(Long userId, DeleteCommentDTO deleteCommentDTO);
+    Result deleteCommentOrReply(DeleteCommentDTO deleteCommentDTO);
 }
