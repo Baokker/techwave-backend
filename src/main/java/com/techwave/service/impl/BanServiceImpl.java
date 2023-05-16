@@ -78,11 +78,12 @@ public class BanServiceImpl implements BanService {
 
         Notification notification = new Notification();
         notification.setUserId(userId);
+        notification.setTitle("账号解封通知");
         notification.setNotificationType("system");
-        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"版块中你已被解除封禁");
+        notification.setContent("您的账号在"+sectionMapper.selectById(sectionId).getName()+"版块中已经解除封禁");
         notification.setIsRead(false);
         notificationMapper.insert(notification);
-        
+
         queryWrapper.eq(SectionBanUser::getUserId, userId)
                 .eq(SectionBanUser::getSectionId, sectionId);
         sectionBanUserMapper.delete(queryWrapper);
@@ -166,8 +167,9 @@ public class BanServiceImpl implements BanService {
 
         Notification notification = new Notification();
         notification.setUserId(userId);
+        notification.setTitle("账号封禁通知");
         notification.setNotificationType("system");
-        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"版块中你被封禁至"+banUntilTime);
+        notification.setContent("由于您在"+sectionMapper.selectById(sectionId).getName()+"版块中的不正当行为，你已被封禁至"+banUntilTime);
         notification.setIsRead(false);
         notificationMapper.insert(notification);
 
