@@ -191,16 +191,14 @@ public class AccountController {
 
     @PostMapping("create_section")
     public Result createSection(@RequestHeader("T-Token") String token,@RequestParam("sectionName") String sectionName
-            ,@RequestParam("sectionAvatar") MultipartFile image,@RequestParam("sectionIntro") String sectionIntro
-    ,@RequestParam("subsections") String[] subsection){
+            ,@RequestParam("sectionAvatar") MultipartFile image,@RequestParam("sectionIntro") String sectionIntro){
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
         String s = ossService.uploadFile(image);
-        return sectionService.createSection(userId,sectionName,s,sectionIntro,subsection);
+        return sectionService.createSection(userId,sectionName,s,sectionIntro);
     }
-
 }
 

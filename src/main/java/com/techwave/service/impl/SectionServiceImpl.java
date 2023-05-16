@@ -33,6 +33,8 @@ public class SectionServiceImpl implements SectionService {
     @Autowired
     private SectionAndSubSectionMapper sectionAndSubSectionMapper;
     @Autowired
+    private SectionAndRequestMapper sectionAndRequestMapper;
+    @Autowired
     private CollectAndSectionMapper collectAndSectionMapper;
     @Autowired
     private CollectService collectService;
@@ -405,25 +407,18 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    public Result createSection(Long userId, String sectionName, String image, String sectionIntro, String[] subsection) {
-        LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Section::getName, sectionName);
-        queryWrapper.last("limit 1");
-        Section section = sectionMapper.selectOne(queryWrapper);
-        if (section != null) {
-            return Result.fail(-1, "论坛里已有该版块", null);
-        }
-        Section section1 = new Section();
-        section1.setName(sectionName);
-        section1.setAvatar(image);
-        section1.setDescription(sectionIntro);
-        section1.setModeratorId(userId);
-        sectionMapper.insert(section1);
-        for (int i = 0; i < subsection.length; i++) {
-            AddSubSectionDTO addSubSectionDTO = new AddSubSectionDTO(section1.getId(), subsection);
-            this.addSubSection(addSubSectionDTO);
-        }
-        return Result.success(20000, "okk", null);
+    public Result createSection(Long userId, String sectionName, String image, String sectionIntro) {
+        SectionAndRequest sectionAndRequest = new SectionAndRequest();
+        sectionAndRequest.setName(sectionName);
+        sectionAndRequest.setAvatar(image);
+        sectionAndRequest.setDescription(sectionIntro);
+        sectionAndRequest.setUserId(userId);
+        sectionAndRequest.setIsApproved(false);
+        int result = sectionAndRequestMapper.insert(sectionAndRequest);
+        if(result == 1)
+            return Result.success(20000, "okk", null);
+        else
+            return Result.fail(-1,"创建申请提交失败",null);
     }
 
     @Override

@@ -11,11 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName(value = "t_section_request")
-
-
-
 public class SectionAndRequest {
-
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     private Long userId;

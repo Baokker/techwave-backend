@@ -29,7 +29,7 @@ public interface SectionService {
 
     Result getUserSections(Long userId);
 
-    Result createSection(Long userId, String sectionName, String s, String sectionIntro, String[] subsection);
+    Result createSection(Long userId, String sectionName, String image, String sectionIntro);
 
     Result deleteSubSection(Long userId, Integer subsectionId);
 
