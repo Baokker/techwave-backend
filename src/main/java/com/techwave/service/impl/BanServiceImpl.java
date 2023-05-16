@@ -107,9 +107,9 @@ public class BanServiceImpl implements BanService {
             Long diffInMillis = currentTimestamp.getTime() - banUntil.getTime();
             if (diffInMillis > 0) {
                 sectionBanUserMapper.deleteById(sectionBanUser.getId());
-                return true;
-            } else {
                 return false;
+            } else {
+                return true;
             }
         }
     }

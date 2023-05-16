@@ -96,20 +96,22 @@ public class PostServiceImpl implements PostService {
         PostVO postVO = new PostVO();
 
         postVO.setTitle(post.getTitle());
-        if (userId != null) {
-            postVO.setIsCollected(collectService.isUserCollectPost(userId, postId));
-            postVO.setIsLiked(likeMapper.selectIsUserLikePost(userId, postId));
-        } else {
-            postVO.setIsCollected(false);
-            postVO.setIsLiked(false);
-        }
-
         postVO.setSectionId(post.getSectionId());
 
         Section section = sectionService.findSectionById(post.getSectionId());
         postVO.setSectionName(section.getName());
         postVO.setTime(post.getUpdateTime());
         postVO.setContent(this.findBodyByPostId(postId));
+
+        if (userId != null) {
+            postVO.setIsCollected(collectService.isUserCollectPost(userId, postId));
+            postVO.setIsLiked(likeMapper.selectIsUserLikePost(userId, postId));
+            postVO.setIsBanned(banService.getUserIsBannedInSection(userId, section.getId()));
+        } else {
+            postVO.setIsCollected(false);
+            postVO.setIsLiked(false);
+            postVO.setIsBanned(false);
+        }
 
         Post post1 = this.findPostById(postId);
         User user = userService.findUserById(post1.getAuthorId());
@@ -118,7 +120,6 @@ public class PostServiceImpl implements PostService {
         postVO.setAvatar(user.getAvatar());
         postVO.setBrowseNumber(post.getViewCount());
         postVO.setLikeCount(post.getLikeCount());
-        postVO.setIsBanned(banService.getUserIsBannedInSection(post1.getAuthorId(), section.getId()));
 
         if (post.getSubsectionId() == null) {
             postVO.setSubsectionId(null);
