@@ -145,7 +145,7 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return sectionService.getUserBySearch(userId,searchUserDTO);
     }
 
     @PostMapping("transfer_section")
@@ -155,7 +155,7 @@ public class ModeratorController {
             return Result.fail(TCode.OTHER_ERROR.getCode(), "从token中解析到到userId为空", null);
         }
         Long userId = Long.valueOf(userIdStr);
-        return null;
+        return sectionService.transferSection(userId,transferSectionDTO);
     }
 
     @GetMapping("post_report")

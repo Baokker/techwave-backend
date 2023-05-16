@@ -43,6 +43,11 @@ public class SectionServiceImpl implements SectionService {
     @Autowired
     private PostMapper postMapper;
 
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private ModeratorMapper moderatorMapper;
     @Override
     public Result getSectionData(Long userId, Long sectionId, Integer page, Integer perPage) {
         if (sectionId == null)
@@ -80,6 +85,7 @@ public class SectionServiceImpl implements SectionService {
 
         return Result.success(20000, "okk", sectionDataVO);
     }
+
     @Override
     public Section findSectionById(Long sectionId) {
         LambdaQueryWrapper<Section> queryWrapper = new LambdaQueryWrapper<>();
@@ -523,5 +529,79 @@ public class SectionServiceImpl implements SectionService {
         forumSectionVO.setAvatar(section.getAvatar());
         forumSectionVO.setCollectCount(section.getUserCount());
         return forumSectionVO;
+    }
+
+    @Override
+    public Result getUserBySearch(Long userId, SearchUserDTO searchUserDTO) {
+        String content = searchUserDTO.getContent();
+        int page = searchUserDTO.getPage();
+        int perPage = searchUserDTO.getPerPage();
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            queryWrapper.like(User::getUsername, content);
+        }
+        queryWrapper.last("limit " + (page - 1) * perPage + "," + perPage);
+
+        List<User> users = userMapper.selectList(queryWrapper);
+
+        LambdaQueryWrapper<User> countWrapper = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            countWrapper.like(User::getUsername, content);
+        }
+        Integer total = Math.toIntExact(userMapper.selectCount(countWrapper));
+
+        return Result.success(20000, "okk", new ForumUserDTO(total, usercopyList(users)));
+        //return null;
+    }
+
+    private List<ForumUserVO> usercopyList(List<User> users) {
+        List<ForumUserVO> forumUserVOS = new ArrayList<>();
+        for (User user :
+                users) {
+            forumUserVOS.add(usercopy(user));
+
+        }
+        return forumUserVOS;
+    }
+
+    private ForumUserVO usercopy(User user) {
+        ForumUserVO forumUserVO = new ForumUserVO();
+        forumUserVO.setId(user.getId());
+        forumUserVO.setUsername(user.getUsername());
+        forumUserVO.setEmail(user.getEmail());
+        forumUserVO.setGender(user.getGender());
+        forumUserVO.setAvatar(user.getAvatar());
+        forumUserVO.set_moderator(user.getIsModerator());
+        return forumUserVO;
+    }
+
+    @Override
+    public Result transferSection(Long userId, TransferSectionDTO transferSectionDTO) {
+        Long targetId = transferSectionDTO.getTargetId();
+        Long sectionId = transferSectionDTO.getSectionId();
+
+        LambdaQueryWrapper<Moderator> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(Moderator::getSectionId, sectionId);
+        queryWrapper1.last("limit 1");
+        Moderator moderator = moderatorMapper.selectOne(queryWrapper1);
+        moderator.setUserId(targetId);
+        moderatorMapper.updateById(moderator);
+
+        LambdaQueryWrapper<Section> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Section::getId, sectionId);
+        queryWrapper2.last("limit 1");
+        Section section = sectionMapper.selectOne(queryWrapper2);
+        section.setModeratorId(targetId);
+        sectionMapper.updateById(section);
+
+        LambdaQueryWrapper<User> queryWrapper3 = new LambdaQueryWrapper<>();
+        queryWrapper3.eq(User::getId, targetId);
+        queryWrapper3.last("limit 1");
+        User user = userMapper.selectOne(queryWrapper3);
+        user.setIsModerator(true);
+        userMapper.updateById(user);
+
+
+        return Result.success(20000, "okk", null);
     }
 }

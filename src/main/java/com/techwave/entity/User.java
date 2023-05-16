@@ -10,13 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-/**
- * @program: JiKeSpace
- * @description: 用户实体类
- * @packagename: com.tjsse.jikespace.entity
- * @author: peng peng
- * @date: 2022-11-29 17:52
- **/
+
 
 @Data
 @Builder

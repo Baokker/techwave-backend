@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 
 public class TransferSectionDTO {
 
-    private Integer targetId;
+    private Long targetId;
 
-    private Integer sectionId;
+    private Long sectionId;
 
 }

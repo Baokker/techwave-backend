@@ -56,4 +56,8 @@ public interface SectionService {
     Result changeSectionName( SectionNameDTO sectionNameDTO);
 
     Result getSectionDataById(Long sectionId);
+
+    Result getUserBySearch(Long userId, SearchUserDTO searchUserDTO);
+
+    Result transferSection(Long userId,TransferSectionDTO transferSectionDTO);
 }
