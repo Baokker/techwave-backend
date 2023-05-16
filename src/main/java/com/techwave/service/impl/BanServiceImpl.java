@@ -155,7 +155,7 @@ public class BanServiceImpl implements BanService {
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setNotificationType("system");
-        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"板块中你被封禁至"+banUntilTime);
+        notification.setContent("在"+sectionMapper.selectById(sectionId).getName()+"版块中你被封禁至"+banUntilTime);
         notification.setIsRead(false);
 
         return banSectionUser(userId,sectionId,banUntilTime);

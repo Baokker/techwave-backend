@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 获取板块信息请求参数
+ * 获取版块信息请求参数
  *
  * @author wlf 1557177832@qq.com
  * @version 2022/12/3 0:30

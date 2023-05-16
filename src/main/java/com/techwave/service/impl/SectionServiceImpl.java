@@ -587,7 +587,7 @@ public class SectionServiceImpl implements SectionService {
         notification.setUserId(targetId);
         notification.setTitle("版主转让通知");
         notification.setNotificationType("system");
-        notification.setContent("您已经成为"+sectionMapper.selectById(sectionId).getName()+"板块的版主");
+        notification.setContent("您已经成为"+sectionMapper.selectById(sectionId).getName()+"版块的版主");
         notification.setIsRead(false);
         notificationMapper.insert(notification);
 

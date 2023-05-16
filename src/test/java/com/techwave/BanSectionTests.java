@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @descriptions: 测试板块内封禁
+ * @descriptions: 测试版块内封禁
  * @author: baokker
  * @date: 2023/4/29 14:23
  * @version: 1.0
