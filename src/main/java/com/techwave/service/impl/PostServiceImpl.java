@@ -6,10 +6,7 @@ import com.techwave.entity.*;
 import com.techwave.entity.dto.PostDataDTO;
 import com.techwave.entity.dto.PostPublishDTO;
 import com.techwave.entity.vo.*;
-import com.techwave.mapper.LikeMapper;
-import com.techwave.mapper.NotificationMapper;
-import com.techwave.mapper.PostAndBodyMapper;
-import com.techwave.mapper.PostMapper;
+import com.techwave.mapper.*;
 import com.techwave.service.*;
 import com.techwave.utils.Result;
 import com.techwave.utils.TCode;
@@ -19,7 +16,11 @@ import org.springframework.stereotype.Service;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * post服务类的实现类
@@ -34,6 +35,12 @@ public class PostServiceImpl implements PostService {
     private PostMapper postMapper;
     @Autowired
     private PostAndBodyMapper postAndBodyMapper;
+    @Autowired
+    private CommentAndBodyMapper commentAndBodyMapper;
+    @Autowired
+    private CommentMapper commentMapper;
+    @Autowired
+    private ReplyMapper replyMapper;
     @Autowired
     private ThreadService threadService;
     @Autowired
@@ -247,15 +254,71 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostDataVO> findPostBySectionIdWithPageAndContent(Long sectionId, Integer page, Integer perPage, String content) {
         Page<Post> postPage = new Page<>(page, perPage);
-        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Post::getSectionId, sectionId);
-        queryWrapper.eq(Post::getIsDeleted, false);
+        //匹配标题
+        LambdaQueryWrapper<Post> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(Post::getSectionId, sectionId);
+        queryWrapper1.eq(Post::getIsDeleted, false);
         if (content != null && !content.equals("")) {
-            queryWrapper.like(Post::getTitle, content);
+            queryWrapper1.like(Post::getTitle, content);
         }
-
-        Page<Post> postPage1 = postMapper.selectPage(postPage, queryWrapper);
-        return copyList(postPage1.getRecords());
+        List<Post> posts1 = postMapper.selectList(queryWrapper1);
+        //匹配帖子内容
+        LambdaQueryWrapper<PostAndBody> queryWrapper2 = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            queryWrapper2.like(PostAndBody::getContent, content);
+        }
+        List<PostAndBody> postAndBodies = postAndBodyMapper.selectList(queryWrapper2);
+        List<Post> posts2 = new ArrayList<>();
+        for (PostAndBody postAndBody:
+             postAndBodies) {
+            LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Post::getId,postAndBody.getPostId());
+            posts2.add(postMapper.selectOne(queryWrapper));
+        }
+        //匹配评论
+        LambdaQueryWrapper<CommentAndBody> queryWrapper3 = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            queryWrapper3.like(CommentAndBody::getContent, content);
+        }
+        List<CommentAndBody> commentAndBodies = commentAndBodyMapper.selectList(queryWrapper3);
+        List<Comment> comments = new ArrayList<>();
+        for (CommentAndBody commentAndBody:
+             commentAndBodies) {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getId,commentAndBody.getCommentId());
+            comments.add(commentMapper.selectOne(queryWrapper));
+        }
+        //匹配回复
+        LambdaQueryWrapper<Reply> queryWrapper4 = new LambdaQueryWrapper<>();
+        if (content != null && !content.equals("")) {
+            queryWrapper4.like(Reply::getContent, content);
+        }
+        List<Reply> replies = replyMapper.selectList(queryWrapper4);
+        for (Reply reply:
+            replies) {
+            LambdaQueryWrapper<Comment> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Comment::getId,reply.getCommentId());
+            comments.add(commentMapper.selectOne(queryWrapper));
+        }
+        List<Post> posts3 = new ArrayList<>();
+        for (Comment comment:
+                comments) {
+            LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Post::getId,comment.getPostId());
+            posts3.add(postMapper.selectOne(queryWrapper));
+        }
+        List<Post> posts = Stream.of(posts1, posts2, posts3)
+                .flatMap(List::stream) // 1.将三个List合并为一个Stream
+                .distinct() //2.去重
+                .sorted(Comparator.comparing(Post::getUpdateTime).reversed()) // 3.按照createTime降序排序
+                .collect(Collectors.toList()); // 4.转为List
+        int totalSize = posts.size();
+        int startIndex = (page - 1) * perPage;
+        if (startIndex > totalSize) { // 如果起始索引大于数据总数，返回空List
+            return Collections.emptyList();
+        }
+        int endIndex = Math.min(startIndex + perPage, totalSize);
+        return copyList(posts.subList(startIndex, endIndex));
     }
 
     @Override
