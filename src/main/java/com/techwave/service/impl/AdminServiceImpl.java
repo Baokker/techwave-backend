@@ -177,6 +177,7 @@ public class AdminServiceImpl implements AdminService {
                 notificationType("system").
                 title("申请处理通知").
                 build();
+
         notificationMapper.insert(notification);
 
         return Result.success(20000,"通过版块申请成功",null);
@@ -261,6 +262,13 @@ public class AdminServiceImpl implements AdminService {
                 notificationType("system").
                 title("举报处理通知").
                 build();
+        //给被封禁用户发送系统通知
+        Notification notification1 = Notification.builder().
+                userId(userId).
+                content("您因"+adminAndReport.getReportType()+"被封禁，解封时间："+banUntil+"。").
+                notificationType("system").
+                title("封禁通知").
+                build();
         notificationMapper.insert(notification);
 
         adminAndReportMapper.deleteById(reportId);
@@ -298,6 +306,13 @@ public class AdminServiceImpl implements AdminService {
         if(chatBanUser==null)
             return Result.fail(-1,"该用户未被封禁",null);
         chatBanUserMapper.deleteById(chatBanId);
+        //给被封禁用户发送解封通知
+        Notification notification = Notification.builder().
+                userId(chatBanUser.getUserId()).
+                content("您已被解封。").
+                notificationType("system").
+                title("解封通知").
+                build();
         return Result.success(20000,"解封成功",null);
     }
     //判断当前是否已到解封时间
