@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -164,6 +161,12 @@ public class PostServiceImpl implements PostService {
     @Override
     public Result publishPost(Long userId, PostPublishDTO postPublishDTO) {
         Post post = new Post();
+        Section section = sectionService.findSectionById(postPublishDTO.getSectionId());
+        SubSection subsection = sectionService.findSubSectionById(postPublishDTO.getSubsectionId());
+        if(section==null || subsection==null ||postPublishDTO.getTitle()==null
+                || Objects.equals(postPublishDTO.getTitle(), "") || Objects.equals(postPublishDTO.getContent(), "") || postPublishDTO.getContent()==null){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
+        }
         post.setSectionId(postPublishDTO.getSectionId());
         post.setTitle(postPublishDTO.getTitle());
         post.setSubsectionId(postPublishDTO.getSubsectionId());

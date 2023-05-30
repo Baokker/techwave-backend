@@ -42,6 +42,9 @@ public class UserController {
         String password = userDTO.getPassword();
         String email = userDTO.getEmail();
         String account = userDTO.getAccount();
+        if(!registerService.isEmail(email)){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), "邮箱不合法",null);
+        }
 
         return registerService.register(username, password, email, account);
     }
