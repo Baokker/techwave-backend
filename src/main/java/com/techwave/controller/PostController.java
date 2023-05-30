@@ -45,6 +45,9 @@ public class PostController {
     @GetMapping("{postId}")
     public Result getPostData(@RequestHeader(value = "T-Token", required = false) String token, @PathVariable String postId, @RequestParam Integer page, @RequestParam Integer perPage, @RequestParam Integer isOnlyHost) throws ParseException {
         Boolean isOnlyHostBoolean = isOnlyHost == 1;
+        if(postId==null){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
+        }
         PostDataDTO postDataDTO = new PostDataDTO(Long.valueOf(postId), page, perPage, isOnlyHostBoolean);
         String userIdStr = JwtUtil.getUserIdFromToken(token);
         if (userIdStr == null) {
