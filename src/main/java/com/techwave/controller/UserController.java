@@ -45,7 +45,9 @@ public class UserController {
         if(!registerService.isEmail(email)){
             return Result.fail(TCode.PARAMS_ERROR.getCode(), "邮箱不合法",null);
         }
-
+        if(password == null || password.equals("") || username==null || username.equals("") || account == null|| account.equals("")){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(),null);
+        }
         return registerService.register(username, password, email, account);
     }
 
@@ -80,6 +82,9 @@ public class UserController {
     public Result login(@RequestBody LoginDTO loginDTO) {
         String accountOrEmail = loginDTO.getAccount();
         String password = loginDTO.getPassword();
+        if(accountOrEmail==null || accountOrEmail.equals("") || password==null || password.equals("")){
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg());
+        }
         return loginService.createTokenByAccountOrEmail(accountOrEmail, password);
     }
 
