@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 版块的控制类
@@ -73,6 +74,10 @@ public class SectionController {
     @GetMapping("{sectionId}/search")
     public Result getPostsBySearch(@PathVariable Integer sectionId, Integer page, Integer perPage, String content) {
         SectionSearchPostDTO sectionSearchPostDTO = new SectionSearchPostDTO((long) sectionId, page, perPage, content);
+        if(Objects.equals(content, "") || Objects.equals(content,null)){
+            SectionDataDTO sectionDataDTO = new SectionDataDTO((long) sectionId,page,perPage);
+            return sectionService.getAllPostsInSection(sectionDataDTO);
+        }
         return sectionService.getPostsInSectionByContent(sectionSearchPostDTO);
     }
 

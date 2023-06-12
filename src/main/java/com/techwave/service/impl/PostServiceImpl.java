@@ -275,8 +275,12 @@ public class PostServiceImpl implements PostService {
         for (PostAndBody postAndBody:
              postAndBodies) {
             LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Post::getSectionId,sectionId);
+            queryWrapper.eq(Post::getIsDeleted, false);
             queryWrapper.eq(Post::getId,postAndBody.getPostId());
-            posts2.add(postMapper.selectOne(queryWrapper));
+            Post post = postMapper.selectOne(queryWrapper);
+            if(post != null)
+                posts2.add(post);
         }
         //匹配评论
         LambdaQueryWrapper<CommentAndBody> queryWrapper3 = new LambdaQueryWrapper<>();
@@ -307,8 +311,12 @@ public class PostServiceImpl implements PostService {
         for (Comment comment:
                 comments) {
             LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Post::getSectionId,sectionId);
+            queryWrapper.eq(Post::getIsDeleted, false);
             queryWrapper.eq(Post::getId,comment.getPostId());
-            posts3.add(postMapper.selectOne(queryWrapper));
+            Post post = postMapper.selectOne(queryWrapper);
+            if(post != null)
+                posts3.add(post);
         }
         List<Post> posts = Stream.of(posts1, posts2, posts3)
                 .flatMap(List::stream) // 1.将三个List合并为一个Stream
@@ -321,7 +329,8 @@ public class PostServiceImpl implements PostService {
             return Collections.emptyList();
         }
         int endIndex = Math.min(startIndex + perPage, totalSize);
-        return copyList(posts.subList(startIndex, endIndex));
+        List<Post> subPosts = posts.subList(startIndex, endIndex);
+        return copyList(subPosts);
     }
 
     @Override

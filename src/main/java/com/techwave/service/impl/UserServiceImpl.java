@@ -219,7 +219,7 @@ public class UserServiceImpl implements UserService {
         String phone = userInfoDTO.getPhone();
         String intro = userInfoDTO.getIntro();
         String gender = userInfoDTO.getGender();
-        if (username == null || phone == null || intro == null || gender == null) {
+        if (username == null || username.length() > 10 || phone == null || phone.length() != 11 || intro == null || intro.length() > 100 || gender == null) {
             return Result.fail(-1, "参数有误", null);
         }
 
