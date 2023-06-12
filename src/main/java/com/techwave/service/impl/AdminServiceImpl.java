@@ -283,7 +283,6 @@ public class AdminServiceImpl implements AdminService {
         if(adminAndReportMapper.selectById(reportId)==null){
             return Result.fail(-1,"该举报信息不存在",null);
         }
-        adminAndReportMapper.deleteById(reportId);
 
         //给举报者发送系统通知
         AdminAndReport adminAndReport = adminAndReportMapper.selectById(reportId);
@@ -294,6 +293,8 @@ public class AdminServiceImpl implements AdminService {
                 title("举报处理通知").
                 build();
         notificationMapper.insert(notification);
+
+        adminAndReportMapper.deleteById(reportId);
 
         return Result.success(20000,"拒绝受理举报信息成功",null);
     }
