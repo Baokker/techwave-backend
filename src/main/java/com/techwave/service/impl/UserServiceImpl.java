@@ -119,6 +119,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findUserById(Long userId) {
+        System.out.println(userId);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getId, userId);
         queryWrapper.last("limit 1");
@@ -219,10 +220,22 @@ public class UserServiceImpl implements UserService {
         String phone = userInfoDTO.getPhone();
         String intro = userInfoDTO.getIntro();
         String gender = userInfoDTO.getGender();
-        if (username == null || username.length() > 10 || phone == null || phone.length() != 11 || intro == null || intro.length() > 100 || gender == null) {
-            return Result.fail(-1, "参数有误", null);
-        }
-
+        if(username == null)
+            return Result.fail(-1, "用户名不能为空", null);
+        if(username.length() > 10)
+            return Result.fail(-1, "用户名长度不能超过10个字符", null);
+        if(phone == null)
+            return Result.fail(-1, "联系方式不能为空", null);
+        if(phone.length() != 11)
+            return Result.fail(-1, "联系方式长度只能是11位", null);
+        if(intro == null)
+            return Result.fail(-1, "自我介绍不能为空", null);
+        if(intro.length() > 100)
+            return Result.fail(-1, "自我介绍长度不能超过100个字符", null);
+        if(gender == null)
+            return Result.fail(-1, "性别不能为空", null);
+        if((!gender.equals("男") && !gender.equals("女") && !gender.equals("其他")))
+            return Result.fail(-1, "性别只能是男、女、其他之一", null);
         User user = this.findUserById(userId);
 
         user.setUsername(username);
@@ -239,17 +252,20 @@ public class UserServiceImpl implements UserService {
     public Result editPassword(Long userId, PasswordDTO passwordDTO) {
         String newPassword = passwordDTO.getNewPassword();
         String oldPassword = passwordDTO.getOldPassword();
-        if (newPassword == null || oldPassword == null) {
-            return Result.fail(-1, "参数错误", null);
+        if (oldPassword == null) {
+            return Result.fail(-1, "旧密码不能为空", null);
+        }
+        if (newPassword == null) {
+            return Result.fail(-1, "新密码不能为空", null);
         }
         User user = this.findUserById(userId);
         String password = user.getPassword();
         boolean matches = passwordEncoder.matches(oldPassword, password);
         if (matches) {
-            if (oldPassword == newPassword) {
+            if (oldPassword.equals(newPassword)) {
                 Map<String, Boolean> map = new HashMap<>();
                 map.put("result", false);
-                return Result.fail(-1, "新密码与旧密码重复", map);
+                return Result.fail(-1, "新旧密码不能重复", map);
             }
             String encodedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encodedPassword);
@@ -260,7 +276,7 @@ public class UserServiceImpl implements UserService {
         } else {
             Map<String, Boolean> map = new HashMap<>();
             map.put("result", false);
-            return Result.fail(-1, "密码错误或新密码与旧密码重复", map);
+            return Result.fail(-1, "旧密码输入错误", map);
         }
     }
 
