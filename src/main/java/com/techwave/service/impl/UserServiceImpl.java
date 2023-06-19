@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * @program: JiKeSpace
@@ -226,6 +227,8 @@ public class UserServiceImpl implements UserService {
             return Result.fail(-1, "用户名长度不能超过10个字符", null);
         if(phone == null)
             return Result.fail(-1, "联系方式不能为空", null);
+        if(!Pattern.compile("[0-9]*").matcher(phone).matches())
+            return Result.fail(-1, "联系方式只能由数字组成", null);
         if(phone.length() != 11)
             return Result.fail(-1, "联系方式长度只能是11位", null);
         if(intro == null)
