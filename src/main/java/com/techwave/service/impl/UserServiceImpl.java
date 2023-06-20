@@ -270,6 +270,11 @@ public class UserServiceImpl implements UserService {
                 map.put("result", false);
                 return Result.fail(-1, "新旧密码不能重复", map);
             }
+            if(newPassword.length() < 8 || newPassword.length() > 20){
+                Map<String, Boolean> map = new HashMap<>();
+                map.put("result", false);
+                return Result.fail(-1, "新密码长度应在8-20个字符", map);
+            }
             String encodedPassword = passwordEncoder.encode(newPassword);
             user.setPassword(encodedPassword);
             userMapper.updateById(user);
