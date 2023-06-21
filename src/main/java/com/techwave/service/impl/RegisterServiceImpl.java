@@ -7,7 +7,9 @@ import com.techwave.utils.Result;
 import com.techwave.mapper.UserMapper;
 import com.techwave.service.FolderService;
 import com.techwave.service.RegisterService;
+import org.apache.ibatis.annotations.AutomapConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Autowired
     UserMapper userMapper;
+
     @Autowired
     FolderService folderService;
 
@@ -29,13 +32,33 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     public Result register(String username, String password, String email, String account) {
         List<User> userList;
+        String validRegex = "[^a-zA-Z0-9]";
+        if (username == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "user name is empty", null);
+        }
+        if (password == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "password is empty", null);
+        }
+        if (email == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "email is empty", null);
+        }
+        if (account == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "account is empty", null);
+        }
+
+        if(!this.isEmail(email)){
+            return Result.fail(-1, "email is invalid",null);
+        }
 
         // username
+        if (username.length() > 10) {
+            return Result.fail(-1, "user name is too long", null);
+        }
         QueryWrapper<User> userNameWrapper = new QueryWrapper<>();
-        userNameWrapper.eq("username", username);
+        userNameWrapper.eq("account", account);
         userList = userMapper.selectList(userNameWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(TCode.USERNAME_EXIST.getCode(), "用户名已存在", null);
+            return Result.fail(-1, "account already exists", null);
         }
 
         // email
@@ -43,7 +66,18 @@ public class RegisterServiceImpl implements RegisterService {
         emailWrapper.eq("email", email);
         userList = userMapper.selectList(emailWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(TCode.EMAIL_EXIST.getCode(), "邮箱已存在", null);
+            return Result.fail(-1, "email already exists", null);
+        }
+
+        if (password.length() < 8) {
+            return Result.fail(-1, "password is too short", null);
+        }
+        if (password.length() > 20) {
+            return Result.fail(-1, "password is too long", null);
+        }
+
+        if(password == null || password.equals("") || username==null || username.equals("") || account == null|| account.equals("")) {
+            return Result.fail(TCode.PARAMS_ERROR.getCode(), TCode.PARAMS_ERROR.getMsg(), null);
         }
 
         // account
@@ -51,7 +85,7 @@ public class RegisterServiceImpl implements RegisterService {
         accountWrapper.eq("account", username);
         userList = userMapper.selectList(accountWrapper);
         if (userList.size() >= 1) {
-            return Result.fail(TCode.ACCOUNT_EXIST.getCode(), "账号已存在", null);
+            return Result.fail(-1, "account already exists", null);
         }
 
         String encodedPassword = passwordEncoder.encode(password);
@@ -68,12 +102,12 @@ public class RegisterServiceImpl implements RegisterService {
 
         int insert = userMapper.insert(user);
         if (insert == 0 || insert < 0) {
-            return Result.fail(TCode.OTHER_ERROR.getCode(), "用户注册失败");
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "Register Fail");
         } else {
             folderService.createFolder(user.getId(), "默认收藏夹");
         }
 
-        return Result.success(20000, "okk", null);
+        return Result.success(20000, "Success", null);
     }
 
     @Override

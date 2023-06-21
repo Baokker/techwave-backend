@@ -16,6 +16,7 @@ class RegisterServiceTest {
     @CsvFileSource(resources = "/register_tests.csv", numLinesToSkip = 1)
     void TestRegister(String username, String password, String email, String account, String expectedCode, String expectedMsg) {
         Result result = registerService.register(username, password, email, account);
+
         if ("-1".equals(expectedCode)) {
             assertEquals(Integer.valueOf(-1), result.getCode());
             assertEquals(expectedMsg, result.getMsg());

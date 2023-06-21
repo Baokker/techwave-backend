@@ -30,12 +30,12 @@ public class BanSectionTests {
     }
 
     @Test
-    void unBanSectionUser() {
+    void unBanSectionABB() {
         System.out.println(banService.unBanSectionUser(1L, 1L));
     }
 
     @Test
-    void getUserIsBannedInSection() {
+    void getUserIs() {
         try {
             System.out.println(banService.getUserIsBannedInSection(1L, 1L));
         } catch (Exception e) {

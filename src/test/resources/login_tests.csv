@@ -1,1 +1,8 @@
 accountOrEmail,password,expectedCode,expectedMsg
+baokker,12345678,20000,Request Success
+software1114@163.com,peng1234,20000,Request Success
+,12345678,10002,User does not exist
+fakeuser2,12345678,10002,User does not exist
+fakeuser@163.com,paswwddsd,10002,User does not exist
+Aminuos,wrongpassword,10003,password error
+baokker,,-1,password is empty

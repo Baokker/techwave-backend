@@ -1,0 +1,15 @@
+username,password,email,account,expectedCode,expectedMsg
+username1,password123,test1@example.com,account1,20000,Success
+username2,password123,test2@example.com,account2,20000,Success
+usernameistoolong,test456789,test3@example.com,test2,-1,user name is too long
+uvwxyz1234,test789,test3@example.com,test3,-1,password is too short
+uvwxyz1234,test78vjghkcytghjyjtcgychgfj9,test12@example.com,test23,-1,password is too long
+uvwxyz1234,test1234567890123456,test12@example.com,test23,20000,Success
+uvwxyz1234,test12345678901234567,test121@example.com,test231,-1,password is too long
+abcdefghijk,password123,test1@example.com,test4,10006,email already been used
+abcdefghijk,password123,test1example.com,test4,10001,email is invalid
+abcdefghijz,test123,test5@example.com,account1,-1,user already exists
+,test123,test11@example.com,test11,-1,user name is empty
+abcdefghij,,test12@example.com,test12,-1,password is empty
+abcdefghij,password123,,test14,-1,email is empty
+abcdefghij,password123,test11@example.com,,-1,account is empty

@@ -69,10 +69,13 @@ public class LoginServiceImpl implements LoginService {
             queryAccountWrapper.eq("account", accountOrEmail);
             user = userMapper.selectOne(queryAccountWrapper);
             if (user == null) {
-                return Result.fail(TCode.ACCOUNT_NOT_EXIST.getCode(), "用户不存在", null);
+                return Result.fail(TCode.ACCOUNT_NOT_EXIST.getCode(), "User does not exist", null);
             }
         }
 
+        if (password == null) {
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "password is empty", null);
+        }
         boolean matches = passwordEncoder.matches(password, user.getPassword());
         if (!matches) {
             return Result.fail(TCode.PWD_ERROR.getCode(), TCode.PWD_ERROR.getMsg(), null);
@@ -91,7 +94,7 @@ public class LoginServiceImpl implements LoginService {
         String jwt = JwtUtil.createJWT(user.getId().toString());
 
         if (jwt == null) {
-            return Result.fail(TCode.OTHER_ERROR.getCode(), "token 生成失败", null);
+            return Result.fail(TCode.OTHER_ERROR.getCode(), "token create failed", null);
         }
 
         return Result.success(TCode.SUCCESS.getCode(), TCode.SUCCESS.getMsg(), jwt);
