@@ -7,10 +7,10 @@ package com.techwave.utils;
  */
 
 public enum TCode {
-    SUCCESS(20000, "请求成功"),
+    SUCCESS(20000, "Request Success"),
     PARAMS_ERROR(10001,"参数有误"),
     ACCOUNT_NOT_EXIST(10002,"用户名不存在"),
-    PWD_ERROR(10003, "密码错误"),
+    PWD_ERROR(10003, "password error"),
     TOKEN_ERROR(10004,"token不合法"),
     ACCOUNT_EXIST(10005,"账号已存在"),
     EMAIL_EXIST(10006,"邮箱已存在"),
